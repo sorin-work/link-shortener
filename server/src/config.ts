@@ -1,0 +1,36 @@
+import path from 'node:path';
+
+export interface Config {
+  port: number;
+  databasePath: string;
+  migrationsDir: string;
+  /** Public origin used to build short URLs, without a trailing slash. */
+  baseUrl: string;
+  sessionTtlDays: number;
+  secureCookies: boolean;
+}
+
+function intFrom(value: string | undefined, fallback: number, name: string): number {
+  if (value === undefined || value === '') return fallback;
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 0) throw new Error(`${name} must be a non-negative integer`);
+  return n;
+}
+
+function boolFrom(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined || value === '') return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+}
+
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
+  const port = intFrom(env.PORT, 3000, 'PORT');
+  const baseUrl = (env.BASE_URL || `http://localhost:${port}`).replace(/\/+$/, '');
+  return {
+    port,
+    databasePath: env.DATABASE_PATH || path.resolve('data/links.db'),
+    migrationsDir: env.MIGRATIONS_DIR || path.resolve('server/drizzle'),
+    baseUrl,
+    sessionTtlDays: intFrom(env.SESSION_TTL_DAYS, 30, 'SESSION_TTL_DAYS'),
+    secureCookies: boolFrom(env.SECURE_COOKIES, baseUrl.startsWith('https://')),
+  };
+}
