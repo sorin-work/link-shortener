@@ -31,3 +31,7 @@ export function call(app: TestApp, method: string, path: string, opts: RequestOp
   }
   return app.request(path, { method, headers, body });
 }
+
+// Response bodies in tests are loosely typed on purpose.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const readJson = (res: Response): Promise<any> => res.json();
