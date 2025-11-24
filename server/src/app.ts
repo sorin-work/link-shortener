@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import type { Config } from './config.js';
 import type { Db } from './db/client.js';
 import { errorHandler, notFoundHandler } from './lib/errors.js';
+import { authRoutes } from './routes/auth.js';
 
 export interface AppDeps {
   db: Db;
@@ -19,6 +20,8 @@ export function createApp(deps: AppDeps) {
     db.get(sql`select 1`);
     return c.json({ status: 'ok' });
   });
+
+  app.route('/api/auth', authRoutes(deps));
 
   return app;
 }
