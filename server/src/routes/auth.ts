@@ -4,10 +4,12 @@ import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { users, type User } from '../db/schema.js';
+import { requireUser } from '../middleware/auth.js';
 import { conflict, unauthorized } from '../lib/errors.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { createSession, deleteSession, SESSION_COOKIE } from '../lib/sessions.js';
 import { validate } from '../lib/validate.js';
+import type { AppEnv } from '../types.js';
 
 const email = z.string().trim().toLowerCase().max(254).pipe(z.email('Enter a valid email address'));
 
@@ -35,7 +37,7 @@ export function publicUser(user: User) {
 }
 
 export function authRoutes({ db, config }: AppDeps) {
-  const r = new Hono();
+  const r = new Hono<AppEnv>();
 
   const startSession = (c: Context, userId: number) => {
     const { token, expiresAt } = createSession(db, userId, config.sessionTtlDays);
@@ -85,6 +87,8 @@ export function authRoutes({ db, config }: AppDeps) {
     deleteCookie(c, SESSION_COOKIE, { path: '/' });
     return c.body(null, 204);
   });
+
+  r.get('/me', requireUser(db), (c) => c.json({ user: publicUser(c.get('user')) }));
 
   return r;
 }
