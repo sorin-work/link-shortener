@@ -13,4 +13,14 @@ export const users = sqliteTable('users', {
   createdAt: createdAt(),
 });
 
+export const sessions = sqliteTable('sessions', {
+  /** sha256 of the cookie token, so a leaked database cannot be replayed */
+  id: text('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: createdAt(),
+});
+
 export type User = typeof users.$inferSelect;
