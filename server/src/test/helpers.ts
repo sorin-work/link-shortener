@@ -32,6 +32,23 @@ export function call(app: TestApp, method: string, path: string, opts: RequestOp
   return app.request(path, { method, headers, body });
 }
 
+export function sessionCookie(res: Response): string {
+  const header = res.headers.get('set-cookie');
+  if (!header) throw new Error('response did not set a cookie');
+  return header.split(';')[0]!;
+}
+
+let userCounter = 0;
+
+/** Registers a fresh user and returns its session cookie. */
+export async function registerUser(app: TestApp, email = `user${++userCounter}@example.com`) {
+  const res = await call(app, 'POST', '/api/auth/register', {
+    json: { email, name: 'Test User', password: 'correct-horse' },
+  });
+  if (res.status !== 201) throw new Error(`register failed: ${res.status}`);
+  return sessionCookie(res);
+}
+
 // Response bodies in tests are loosely typed on purpose.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const readJson = (res: Response): Promise<any> => res.json();
