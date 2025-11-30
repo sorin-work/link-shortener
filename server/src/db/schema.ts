@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 const createdAt = () =>
   integer('created_at', { mode: 'timestamp_ms' })
@@ -23,4 +23,23 @@ export const sessions = sqliteTable('sessions', {
   createdAt: createdAt(),
 });
 
+export const links = sqliteTable(
+  'links',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    slug: text('slug').notNull(),
+    url: text('url').notNull(),
+    title: text('title'),
+    createdAt: createdAt(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [uniqueIndex('links_slug_unique').on(t.slug), index('links_user_idx').on(t.userId)],
+);
+
 export type User = typeof users.$inferSelect;
+export type Link = typeof links.$inferSelect;
