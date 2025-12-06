@@ -1,8 +1,8 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import type { Config } from '../config.js';
 import type { Db } from '../db/client.js';
 import { links, type Link } from '../db/schema.js';
-import { conflict } from '../lib/errors.js';
+import { conflict, notFound } from '../lib/errors.js';
 import { generateSlug } from '../lib/slug.js';
 
 export function serializeLink(link: Link, config: Config) {
@@ -19,8 +19,20 @@ export function serializeLink(link: Link, config: Config) {
 
 export type LinkDto = ReturnType<typeof serializeLink>;
 
-export function slugTaken(db: Db, slug: string): boolean {
-  return !!db.select({ id: links.id }).from(links).where(eq(links.slug, slug)).get();
+export function slugTaken(db: Db, slug: string, exceptId?: number): boolean {
+  const where = exceptId ? and(eq(links.slug, slug), ne(links.id, exceptId)) : eq(links.slug, slug);
+  return !!db.select({ id: links.id }).from(links).where(where).get();
+}
+
+/** Loads a link owned by the user, or throws a 404 (also for other users' links). */
+export function getOwnLink(db: Db, userId: number, id: number): Link {
+  const link = db
+    .select()
+    .from(links)
+    .where(and(eq(links.id, id), eq(links.userId, userId)))
+    .get();
+  if (!link) throw notFound('Link not found');
+  return link;
 }
 
 /** Picks a random slug that is not in use yet. */
