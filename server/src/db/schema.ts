@@ -41,5 +41,20 @@ export const links = sqliteTable(
   (t) => [uniqueIndex('links_slug_unique').on(t.slug), index('links_user_idx').on(t.userId)],
 );
 
+export const clicks = sqliteTable(
+  'clicks',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    linkId: integer('link_id')
+      .notNull()
+      .references(() => links.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+    referrer: text('referrer'),
+    userAgent: text('user_agent'),
+  },
+  (t) => [index('clicks_link_created_idx').on(t.linkId, t.createdAt)],
+);
+
 export type User = typeof users.$inferSelect;
 export type Link = typeof links.$inferSelect;
+export type Click = typeof clicks.$inferSelect;
