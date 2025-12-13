@@ -49,6 +49,12 @@ export async function registerUser(app: TestApp, email = `user${++userCounter}@e
   return sessionCookie(res);
 }
 
+export async function createLink(app: TestApp, cookie: string, json: Record<string, unknown>) {
+  const res = await call(app, 'POST', '/api/links', { cookie, json });
+  if (res.status !== 201) throw new Error(`create link failed: ${res.status} ${await res.text()}`);
+  return (await res.json()) as { link: { id: number; slug: string; url: string } };
+}
+
 // Response bodies in tests are loosely typed on purpose.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const readJson = (res: Response): Promise<any> => res.json();
