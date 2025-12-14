@@ -1,5 +1,6 @@
 import type { Db } from '../db/client.js';
 import { clicks, type Link } from '../db/schema.js';
+import { parseUserAgent } from '../lib/useragent.js';
 
 export interface ClickInfo {
   referrer?: string | null;
@@ -17,6 +18,7 @@ export function recordClick(db: Db, link: Link, info: ClickInfo) {
       createdAt: info.at ?? new Date(),
       referrer: clip(info.referrer, 1024),
       userAgent: clip(info.userAgent, 512),
+      ...parseUserAgent(info.userAgent),
     })
     .run();
 }

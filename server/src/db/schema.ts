@@ -51,6 +51,9 @@ export const clicks = sqliteTable(
     createdAt: createdAt(),
     referrer: text('referrer'),
     userAgent: text('user_agent'),
+    device: text('device').notNull().default('unknown'),
+    browser: text('browser').notNull().default('Unknown'),
+    os: text('os').notNull().default('Unknown'),
   },
   (t) => [index('clicks_link_created_idx').on(t.linkId, t.createdAt)],
 );

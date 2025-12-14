@@ -29,6 +29,13 @@
       "when": 1765649309555,
       "tag": "0003_clicks",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1765735831141,
+      "tag": "0004_click_devices",
+      "breakpoints": true
     }
   ]
 }
