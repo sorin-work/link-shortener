@@ -36,6 +36,13 @@
       "when": 1765735831141,
       "tag": "0004_click_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1766317405237,
+      "tag": "0005_click_referrer_host",
+      "breakpoints": true
     }
   ]
 }

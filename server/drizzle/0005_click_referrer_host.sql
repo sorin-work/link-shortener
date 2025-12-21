@@ -1,0 +1,1 @@
+ALTER TABLE `clicks` ADD `referrer_host` text;

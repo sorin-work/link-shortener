@@ -50,6 +50,7 @@ export const clicks = sqliteTable(
       .references(() => links.id, { onDelete: 'cascade' }),
     createdAt: createdAt(),
     referrer: text('referrer'),
+    referrerHost: text('referrer_host'),
     userAgent: text('user_agent'),
     device: text('device').notNull().default('unknown'),
     browser: text('browser').notNull().default('Unknown'),
