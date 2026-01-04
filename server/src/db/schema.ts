@@ -55,6 +55,7 @@ export const clicks = sqliteTable(
     device: text('device').notNull().default('unknown'),
     browser: text('browser').notNull().default('Unknown'),
     os: text('os').notNull().default('Unknown'),
+    country: text('country'),
   },
   (t) => [index('clicks_link_created_idx').on(t.linkId, t.createdAt)],
 );

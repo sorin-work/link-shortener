@@ -49,6 +49,21 @@ describe('GET /:slug', () => {
     expect(rows[1]?.referrer).toBeNull();
   });
 
+  it('takes the country from the configured header', async () => {
+    const { app, db } = setup({ countryHeader: 'x-country' });
+    const cookie = await registerUser(app);
+    const { link } = await createLink(app, cookie, { url: 'https://example.com' });
+    await call(app, 'GET', `/${link.slug}`, { headers: { 'x-country': 'nl' } });
+    await call(app, 'GET', `/${link.slug}`, { headers: { 'cf-ipcountry': 'FR' } });
+    expect(
+      db
+        .select()
+        .from(clicks)
+        .all()
+        .map((row) => row.country),
+    ).toEqual(['NL', null]);
+  });
+
   it('does not swallow api routes', async () => {
     const { app } = setup();
     const res = await call(app, 'GET', '/api/health');

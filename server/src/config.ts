@@ -8,6 +8,8 @@ export interface Config {
   baseUrl: string;
   sessionTtlDays: number;
   secureCookies: boolean;
+  /** Request header a CDN or proxy puts the visitor's country code in. */
+  countryHeader: string;
 }
 
 function intFrom(value: string | undefined, fallback: number, name: string): number {
@@ -32,5 +34,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     baseUrl,
     sessionTtlDays: intFrom(env.SESSION_TTL_DAYS, 30, 'SESSION_TTL_DAYS'),
     secureCookies: boolFrom(env.SECURE_COOKIES, baseUrl.startsWith('https://')),
+    countryHeader: (env.COUNTRY_HEADER || 'cf-ipcountry').toLowerCase(),
   };
 }

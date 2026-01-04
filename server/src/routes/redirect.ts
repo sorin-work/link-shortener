@@ -5,7 +5,7 @@ import { links } from '../db/schema.js';
 import { notFoundPage } from '../pages.js';
 import { recordClick } from '../services/clicks.js';
 
-export function redirectRoutes({ db }: AppDeps) {
+export function redirectRoutes({ db, config }: AppDeps) {
   const r = new Hono();
 
   r.get('/:slug', (c) => {
@@ -19,6 +19,7 @@ export function redirectRoutes({ db }: AppDeps) {
     recordClick(db, link, {
       referrer: c.req.header('referer'),
       userAgent: c.req.header('user-agent'),
+      country: c.req.header(config.countryHeader),
     });
 
     // Every hit has to reach us to be counted, so browsers must not cache it.

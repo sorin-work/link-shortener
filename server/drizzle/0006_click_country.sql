@@ -1,0 +1,1 @@
+ALTER TABLE `clicks` ADD `country` text;

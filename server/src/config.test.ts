@@ -8,6 +8,7 @@ describe('loadConfig', () => {
     expect(config.baseUrl).toBe('http://localhost:3000');
     expect(config.sessionTtlDays).toBe(30);
     expect(config.secureCookies).toBe(false);
+    expect(config.countryHeader).toBe('cf-ipcountry');
   });
 
   it('strips trailing slashes from BASE_URL and enables secure cookies for https', () => {
