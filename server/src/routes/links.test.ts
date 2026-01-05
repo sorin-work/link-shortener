@@ -71,6 +71,44 @@ describe('GET /api/links', () => {
     ]);
   });
 
+  it('pages through the list', async () => {
+    const { app, cookie, create } = await withUser();
+    for (let i = 1; i <= 5; i++) await create({ url: `https://site${i}.example` });
+    const res = await call(app, 'GET', '/api/links?limit=2&page=2', { cookie });
+    const body = await readJson(res);
+    expect(body).toMatchObject({ page: 2, limit: 2, total: 5 });
+    expect(body.links.map((l: { url: string }) => l.url)).toEqual([
+      'https://site3.example/',
+      'https://site2.example/',
+    ]);
+  });
+
+  it('searches slug, url and title', async () => {
+    const { app, cookie, create } = await withUser();
+    await create({ url: 'https://blog.example/post', title: 'Spring sale' });
+    await create({ url: 'https://shop.example', slug: 'summer' });
+    await create({ url: 'https://other.example' });
+    const bySale = await readJson(await call(app, 'GET', '/api/links?q=sale', { cookie }));
+    expect(bySale.total).toBe(1);
+    expect(bySale.links[0].title).toBe('Spring sale');
+    const bySlug = await readJson(await call(app, 'GET', '/api/links?q=SUMM', { cookie }));
+    expect(bySlug.links[0].slug).toBe('summer');
+  });
+
+  it('treats % and _ in searches literally', async () => {
+    const { app, cookie, create } = await withUser();
+    await create({ url: 'https://a.example', title: '100% off' });
+    await create({ url: 'https://b.example', title: '100 off' });
+    const body = await readJson(await call(app, 'GET', '/api/links?q=100%25', { cookie }));
+    expect(body.total).toBe(1);
+  });
+
+  it('rejects an out of range page size', async () => {
+    const { app, cookie } = await withUser();
+    const res = await call(app, 'GET', '/api/links?limit=500', { cookie });
+    expect(res.status).toBe(400);
+  });
+
   it("hides other users' links behind a 404", async () => {
     const { app, create } = await withUser();
     const { body } = await create({ url: 'https://one.example' });
