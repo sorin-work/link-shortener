@@ -8,6 +8,7 @@ import { checkCustomSlug } from '../lib/slug.js';
 import { normalizeDestination } from '../lib/url.js';
 import { validate } from '../lib/validate.js';
 import { requireUser } from '../middleware/auth.js';
+import { countClicks } from '../services/clicks.js';
 import { getOwnLink, serializeLink, slugTaken, uniqueSlug } from '../services/links.js';
 import type { AppEnv } from '../types.js';
 
@@ -73,7 +74,7 @@ export function linkRoutes({ db, config }: AppDeps) {
       .all();
 
     return c.json({
-      links: rows.map((link) => serializeLink(link, config)),
+      links: rows.map((link) => serializeLink(link, config, countClicks(db, link.id))),
       page,
       limit,
       total,
@@ -83,7 +84,7 @@ export function linkRoutes({ db, config }: AppDeps) {
 
   r.get('/:id', validate('param', idParam), (c) => {
     const link = getOwnLink(db, c.get('user').id, c.req.valid('param').id);
-    return c.json({ link: serializeLink(link, config) });
+    return c.json({ link: serializeLink(link, config, countClicks(db, link.id)) });
   });
 
   r.post('/', validate('json', createSchema), (c) => {

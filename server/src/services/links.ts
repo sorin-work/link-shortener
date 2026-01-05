@@ -5,13 +5,14 @@ import { links, type Link } from '../db/schema.js';
 import { conflict, notFound } from '../lib/errors.js';
 import { generateSlug } from '../lib/slug.js';
 
-export function serializeLink(link: Link, config: Config) {
+export function serializeLink(link: Link, config: Config, clicks = 0) {
   return {
     id: link.id,
     slug: link.slug,
     shortUrl: `${config.baseUrl}/${link.slug}`,
     url: link.url,
     title: link.title,
+    clicks,
     createdAt: link.createdAt.toISOString(),
     updatedAt: link.updatedAt.toISOString(),
   };

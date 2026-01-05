@@ -109,6 +109,18 @@ describe('GET /api/links', () => {
     expect(res.status).toBe(400);
   });
 
+  it('includes click counts', async () => {
+    const { app, cookie, create } = await withUser();
+    const { body } = await create({ url: 'https://one.example', slug: 'counted' });
+    await create({ url: 'https://two.example' });
+    await call(app, 'GET', '/counted');
+    await call(app, 'GET', '/counted');
+    const list = await readJson(await call(app, 'GET', '/api/links', { cookie }));
+    expect(list.links.map((l: { clicks: number }) => l.clicks)).toEqual([0, 2]);
+    const one = await readJson(await call(app, 'GET', `/api/links/${body.link.id}`, { cookie }));
+    expect(one.link.clicks).toBe(2);
+  });
+
   it("hides other users' links behind a 404", async () => {
     const { app, create } = await withUser();
     const { body } = await create({ url: 'https://one.example' });
