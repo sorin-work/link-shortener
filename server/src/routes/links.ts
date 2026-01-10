@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
@@ -9,7 +9,7 @@ import { normalizeDestination } from '../lib/url.js';
 import { validate } from '../lib/validate.js';
 import { requireUser } from '../middleware/auth.js';
 import { countClicks } from '../services/clicks.js';
-import { getOwnLink, serializeLink, slugTaken, uniqueSlug } from '../services/links.js';
+import { getOwnLink, listLinks, serializeLink, slugTaken, uniqueSlug } from '../services/links.js';
 import type { AppEnv } from '../types.js';
 
 const idParam = z.object({ id: z.coerce.number().int().positive() });
@@ -19,8 +19,6 @@ const listQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   q: z.string().trim().max(200).optional(),
 });
-
-const likeEscape = (value: string) => value.replace(/[\\%_]/g, (ch) => `\\${ch}`);
 
 const createSchema = z.object({
   url: z.string().max(4096),
@@ -54,32 +52,7 @@ export function linkRoutes({ db, config }: AppDeps) {
   };
 
   r.get('/', validate('query', listQuery), (c) => {
-    const { page, limit, q } = c.req.valid('query');
-    const owner = eq(links.userId, c.get('user').id);
-    let where = owner;
-    if (q) {
-      const pattern = `%${likeEscape(q)}%`;
-      const match = sql`(${links.slug} like ${pattern} escape '\\' or ${links.url} like ${pattern} escape '\\' or ${links.title} like ${pattern} escape '\\')`;
-      where = and(owner, match)!;
-    }
-
-    const total = db.select({ n: count() }).from(links).where(where).get()?.n ?? 0;
-    const rows = db
-      .select()
-      .from(links)
-      .where(where)
-      .orderBy(desc(links.createdAt), desc(links.id))
-      .limit(limit)
-      .offset((page - 1) * limit)
-      .all();
-
-    return c.json({
-      links: rows.map((link) => serializeLink(link, config, countClicks(db, link.id))),
-      page,
-      limit,
-      total,
-      pages: Math.floor(total / limit),
-    });
+    return c.json(listLinks(db, config, c.get('user').id, c.req.valid('query')));
   });
 
   r.get('/:id', validate('param', idParam), (c) => {
