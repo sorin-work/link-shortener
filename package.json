@@ -14,15 +14,19 @@
     "format:check": "prettier --check .",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build",
     "dev": "tsx watch server/src/index.ts",
-    "build": "tsc -p server/tsconfig.build.json",
+    "build": "npm run build:server && npm run build:web",
     "start": "node dist/server/index.js",
-    "typecheck": "tsc -p server --noEmit",
+    "typecheck": "tsc -p server --noEmit && tsc -p web --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "dev:web": "vite --config web/vite.config.ts",
+    "build:server": "tsc -p server/tsconfig.build.json",
+    "build:web": "vite build --config web/vite.config.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@preact/preset-vite": "^2.10.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.19.1",
     "drizzle-kit": "^0.31.7",
@@ -32,6 +36,7 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4",
+    "vite": "^7.3.1",
     "vitest": "^4.0.9"
   },
   "dependencies": {
@@ -40,6 +45,7 @@
     "better-sqlite3": "^12.4.1",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.6",
+    "preact": "^10.28.2",
     "zod": "^4.1.13"
   }
 }
