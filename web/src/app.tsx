@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from './auth';
+import { Layout } from './components/Layout';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { useLocation } from './router';
@@ -11,9 +12,9 @@ function Routes() {
   if (!user) return path === '/register' ? <RegisterPage /> : <LoginPage />;
 
   return (
-    <main>
+    <Layout>
       <h1>Hello, {user.name}</h1>
-    </main>
+    </Layout>
   );
 }
 
