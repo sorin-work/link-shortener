@@ -227,6 +227,28 @@ button:disabled {
   font-size: 1.1rem;
 }
 
+.create-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.create-form .wide,
+.create-form .form-actions {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.form-actions .alert {
+  flex: 1;
+}
+
 .content {
   max-width: 64rem;
   margin: 0 auto;

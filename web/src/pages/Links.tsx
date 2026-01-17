@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api, errorMessage } from '../api';
+import { CreateLinkForm } from '../components/CreateLinkForm';
 import { EmptyState } from '../components/EmptyState';
 import { displayUrl, formatNumber, timeAgo } from '../format';
 import { navigate } from '../router';
@@ -8,6 +9,7 @@ import type { LinkPage } from '../types';
 export function LinksPage() {
   const [data, setData] = useState<LinkPage | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,11 +20,12 @@ export function LinksPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [version]);
 
   return (
     <section class="stack">
       <h1>Links</h1>
+      <CreateLinkForm onCreated={() => setVersion((v) => v + 1)} />
       {error && <p class="alert">{error}</p>}
       {!data && !error && <p class="muted">Loading links…</p>}
       {data && data.links.length === 0 && (
