@@ -1,5 +1,6 @@
 import { AuthProvider, useAuth } from './auth';
 import { Layout } from './components/Layout';
+import { LinksPage } from './pages/Links';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { useLocation } from './router';
@@ -13,7 +14,7 @@ function Routes() {
 
   return (
     <Layout>
-      <h1>Hello, {user.name}</h1>
+      <LinksPage />
     </Layout>
   );
 }

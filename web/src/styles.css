@@ -164,6 +164,69 @@ button:disabled {
   gap: 0.5rem;
 }
 
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.truncate {
+  max-width: 28rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.table .num {
+  text-align: right;
+}
+
+.table tr.clickable {
+  cursor: pointer;
+}
+
+.table tr.clickable:hover {
+  background: var(--bg);
+}
+
+.empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.empty h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
 .content {
   max-width: 64rem;
   margin: 0 auto;
