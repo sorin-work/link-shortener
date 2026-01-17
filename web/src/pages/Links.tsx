@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api, errorMessage } from '../api';
+import { CopyButton } from '../components/CopyButton';
 import { CreateLinkForm } from '../components/CreateLinkForm';
 import { EmptyState } from '../components/EmptyState';
 import { displayUrl, formatNumber, timeAgo } from '../format';
@@ -44,7 +45,12 @@ export function LinksPage() {
           <tbody>
             {data.links.map((link) => (
               <tr key={link.id} class="clickable" onClick={() => navigate(`/links/${link.id}`)}>
-                <td class="mono">/{link.slug}</td>
+                <td>
+                  <div class="slug-cell">
+                    <span class="mono">/{link.slug}</span>
+                    <CopyButton text={link.shortUrl} />
+                  </div>
+                </td>
                 <td>
                   {link.title && <div>{link.title}</div>}
                   <div class="muted truncate">{displayUrl(link.url)}</div>

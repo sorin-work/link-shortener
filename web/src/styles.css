@@ -215,6 +215,17 @@ button:disabled {
   background: var(--bg);
 }
 
+button.small {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.slug-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;
