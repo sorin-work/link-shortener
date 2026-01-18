@@ -226,6 +226,50 @@ button.small {
   gap: 0.5rem;
 }
 
+button.danger {
+  color: var(--danger);
+}
+
+.back {
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.detail-header h1 {
+  margin-bottom: 0.4rem;
+}
+
+.detail-header p {
+  margin: 0.4rem 0 0;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1rem;
+}
+
+.stat {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.stat strong {
+  font-size: 1.5rem;
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;
