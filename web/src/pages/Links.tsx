@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'preact/hooks';
-import { api, errorMessage } from '../api';
+import { api, errorMessage, toQuery } from '../api';
 import { CopyButton } from '../components/CopyButton';
 import { CreateLinkForm } from '../components/CreateLinkForm';
 import { EmptyState } from '../components/EmptyState';
+import { Pagination } from '../components/Pagination';
 import { displayUrl, formatNumber, timeAgo } from '../format';
-import { navigate } from '../router';
+import { navigate, useLocation } from '../router';
 import type { LinkPage } from '../types';
 
 export function LinksPage() {
+  const { query } = useLocation();
+  const page = Math.max(1, Number(query.get('page')) || 1);
+  const q = query.get('q') ?? '';
+  const [search, setSearch] = useState(q);
   const [data, setData] = useState<LinkPage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
@@ -15,22 +20,46 @@ export function LinksPage() {
   useEffect(() => {
     let cancelled = false;
     api
-      .listLinks({})
+      .listLinks({ page, q })
       .then((res) => !cancelled && setData(res))
       .catch((err) => !cancelled && setError(errorMessage(err)));
     return () => {
       cancelled = true;
     };
-  }, [version]);
+  }, [version, page, q]);
+
+  const go = (next: { page?: number; q?: string }) =>
+    navigate(
+      `/${toQuery({ q: next.q ?? q, page: next.page && next.page > 1 ? next.page : undefined })}`,
+    );
 
   return (
     <section class="stack">
       <h1>Links</h1>
       <CreateLinkForm onCreated={() => setVersion((v) => v + 1)} />
+      <form
+        class="search"
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          go({ q: search.trim(), page: 1 });
+        }}
+      >
+        <input
+          type="search"
+          placeholder="Search by slug, URL or title"
+          value={search}
+          onInput={(e) => setSearch(e.currentTarget.value)}
+        />
+        <button type="submit">Search</button>
+      </form>
       {error && <p class="alert">{error}</p>}
       {!data && !error && <p class="muted">Loading links…</p>}
-      {data && data.links.length === 0 && (
+      {data && data.links.length === 0 && !q && (
         <EmptyState title="No links yet">Shorten your first URL to see it here.</EmptyState>
+      )}
+      {data && data.links.length === 0 && q && (
+        <EmptyState title="No matches">Nothing matches “{q}”.</EmptyState>
       )}
       {data && data.links.length > 0 && (
         <table class="table">
@@ -64,6 +93,7 @@ export function LinksPage() {
           </tbody>
         </table>
       )}
+      {data && <Pagination page={data.page} pages={data.pages} onPage={(p) => go({ page: p })} />}
     </section>
   );
 }

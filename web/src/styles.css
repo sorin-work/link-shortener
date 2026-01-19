@@ -270,6 +270,22 @@ button.danger {
   font-size: 1.5rem;
 }
 
+.search {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search input {
+  flex: 1;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;
