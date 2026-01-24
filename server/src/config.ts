@@ -4,6 +4,8 @@ export interface Config {
   port: number;
   databasePath: string;
   migrationsDir: string;
+  /** Built dashboard (vite output). Not served when missing. */
+  webDir: string;
   /** Public origin used to build short URLs, without a trailing slash. */
   baseUrl: string;
   sessionTtlDays: number;
@@ -31,6 +33,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     port,
     databasePath: env.DATABASE_PATH || path.resolve('data/links.db'),
     migrationsDir: env.MIGRATIONS_DIR || path.resolve('server/drizzle'),
+    webDir: env.WEB_DIR || path.resolve('dist/web'),
     baseUrl,
     sessionTtlDays: intFrom(env.SESSION_TTL_DAYS, 30, 'SESSION_TTL_DAYS'),
     secureCookies: boolFrom(env.SECURE_COOKIES, baseUrl.startsWith('https://')),
