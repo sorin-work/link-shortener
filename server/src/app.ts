@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from './lib/errors.js';
 import { authRoutes } from './routes/auth.js';
 import { linkRoutes } from './routes/links.js';
 import { redirectRoutes } from './routes/redirect.js';
+import { statsRoutes } from './routes/stats.js';
 import { mountWeb } from './static.js';
 
 export interface AppDeps {
@@ -26,6 +27,7 @@ export function createApp(deps: AppDeps) {
 
   app.route('/api/auth', authRoutes(deps));
   app.route('/api/links', linkRoutes(deps));
+  app.route('/api/links', statsRoutes(deps));
 
   mountWeb(app, deps.config.webDir);
 
