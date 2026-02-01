@@ -1,4 +1,5 @@
-import { and, count, eq, gte, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, sql, type SQL } from 'drizzle-orm';
+import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { Db } from '../db/client.js';
 import { clicks } from '../db/schema.js';
 
@@ -14,7 +15,32 @@ export interface DayCount {
   clicks: number;
 }
 
+export interface NamedCount {
+  name: string;
+  clicks: number;
+}
+
 const dayOf = sql<string>`strftime('%Y-%m-%d', ${clicks.createdAt} / 1000, 'unixepoch')`;
+
+const BREAKDOWN_LIMIT = 10;
+
+function breakdown(
+  db: Db,
+  where: SQL | undefined,
+  column: SQLiteColumn,
+  fallback: string,
+): NamedCount[] {
+  const n = count();
+  return db
+    .select({ name: column, n })
+    .from(clicks)
+    .where(where)
+    .groupBy(column)
+    .orderBy(desc(n))
+    .limit(BREAKDOWN_LIMIT)
+    .all()
+    .map((row) => ({ name: (row.name as string | null) ?? fallback, clicks: row.n }));
+}
 
 export function linkStats(db: Db, linkId: number, { days, now = new Date() }: StatsOptions) {
   const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
@@ -42,5 +68,10 @@ export function linkStats(db: Db, linkId: number, { days, now = new Date() }: St
     range: { days, from: byDay[0]?.date, to: byDay.at(-1)?.date },
     total,
     byDay,
+    referrers: breakdown(db, inRange, clicks.referrerHost, 'Direct'),
+    devices: breakdown(db, inRange, clicks.device, 'unknown'),
+    browsers: breakdown(db, inRange, clicks.browser, 'Unknown'),
+    os: breakdown(db, inRange, clicks.os, 'Unknown'),
+    countries: breakdown(db, inRange, clicks.country, 'Unknown'),
   };
 }
