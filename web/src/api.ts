@@ -1,4 +1,4 @@
-import type { FieldError, Link, LinkInput, LinkPage, User } from './types';
+import type { FieldError, Link, LinkInput, LinkPage, LinkStats, User } from './types';
 
 export class ApiError extends Error {
   constructor(
@@ -63,4 +63,6 @@ export const api = {
   updateLink: (id: number, input: Partial<LinkInput>) =>
     request<{ link: Link }>('PATCH', `/links/${id}`, input),
   deleteLink: (id: number) => request<void>('DELETE', `/links/${id}`),
+  getStats: (id: number, days: number) =>
+    request<LinkStats>('GET', `/links/${id}/stats${toQuery({ days })}`),
 };

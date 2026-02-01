@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api, errorMessage } from '../api';
+import { BarChart } from '../components/BarChart';
 import { CopyButton } from '../components/CopyButton';
 import { EditLinkForm } from '../components/EditLinkForm';
 import { formatDate, formatNumber } from '../format';
 import { Link as RouterLink, navigate } from '../router';
-import type { Link } from '../types';
+import type { Link, LinkStats } from '../types';
 
 export function LinkDetailPage({ id }: { id: number }) {
   const [link, setLink] = useState<Link | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [stats, setStats] = useState<LinkStats | null>(null);
+
+  useEffect(() => {
+    api
+      .getStats(id, 30)
+      .then(setStats)
+      .catch(() => setStats(null));
+  }, [id]);
 
   useEffect(() => {
     setLink(null);
@@ -86,6 +95,11 @@ export function LinkDetailPage({ id }: { id: number }) {
           <span class="muted">Created</span>
           <strong>{formatDate(link.createdAt)}</strong>
         </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Clicks per day</h2>
+        {stats ? <BarChart data={stats.byDay} /> : <p class="muted">Loading stats…</p>}
       </div>
     </section>
   );

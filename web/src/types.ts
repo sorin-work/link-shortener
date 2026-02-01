@@ -24,6 +24,22 @@ export interface LinkPage {
   pages: number;
 }
 
+export interface NamedCount {
+  name: string;
+  clicks: number;
+}
+
+export interface LinkStats {
+  range: { days: number; from: string; to: string };
+  total: number;
+  byDay: { date: string; clicks: number }[];
+  referrers: NamedCount[];
+  devices: NamedCount[];
+  browsers: NamedCount[];
+  os: NamedCount[];
+  countries: NamedCount[];
+}
+
 export interface LinkInput {
   url: string;
   slug?: string;
