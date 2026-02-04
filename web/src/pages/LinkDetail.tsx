@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api, errorMessage } from '../api';
 import { BarChart } from '../components/BarChart';
+import { Breakdown } from '../components/Breakdown';
 import { CopyButton } from '../components/CopyButton';
 import { EditLinkForm } from '../components/EditLinkForm';
 import { formatDate, formatNumber } from '../format';
@@ -101,6 +102,16 @@ export function LinkDetailPage({ id }: { id: number }) {
         <h2 class="card-title">Clicks per day</h2>
         {stats ? <BarChart data={stats.byDay} /> : <p class="muted">Loading stats…</p>}
       </div>
+
+      {stats && (
+        <div class="breakdowns">
+          <Breakdown title="Referrers" rows={stats.referrers} />
+          <Breakdown title="Countries" rows={stats.countries} />
+          <Breakdown title="Devices" rows={stats.devices} />
+          <Breakdown title="Browsers" rows={stats.browsers} />
+          <Breakdown title="Operating systems" rows={stats.os} />
+        </div>
+      )}
     </section>
   );
 }

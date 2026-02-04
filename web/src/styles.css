@@ -310,6 +310,40 @@ button.danger {
   fill: var(--muted);
 }
 
+.breakdowns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+}
+
+.breakdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.breakdown li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.breakdown .bar-bg {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.breakdown .name,
+.breakdown .count {
+  position: relative;
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;
