@@ -13,13 +13,14 @@ export function LinkDetailPage({ id }: { id: number }) {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [stats, setStats] = useState<LinkStats | null>(null);
+  const [days, setDays] = useState(30);
 
   useEffect(() => {
     api
-      .getStats(id, 30)
+      .getStats(id, days)
       .then(setStats)
       .catch(() => setStats(null));
-  }, [id]);
+  }, [id, days]);
 
   useEffect(() => {
     setLink(null);
@@ -99,7 +100,23 @@ export function LinkDetailPage({ id }: { id: number }) {
       </div>
 
       <div class="card">
-        <h2 class="card-title">Clicks per day</h2>
+        <div class="card-header">
+          <h2 class="card-title">Clicks per day</h2>
+          <select
+            value={days}
+            aria-label="Period"
+            onChange={(e) => setDays(Number(e.currentTarget.value))}
+          >
+            <option value={7}>Last 7 days</option>
+            <option value={30}>Last 30 days</option>
+            <option value={90}>Last 90 days</option>
+          </select>
+        </div>
+        {stats && (
+          <p class="muted">
+            {formatNumber(stats.total)} clicks in the last {stats.range.days} days
+          </p>
+        )}
         {stats ? <BarChart data={stats.byDay} /> : <p class="muted">Loading stats…</p>}
       </div>
 

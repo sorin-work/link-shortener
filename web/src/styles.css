@@ -286,6 +286,13 @@ button.danger {
   gap: 1rem;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
 .card-title {
   font-size: 1rem;
   margin: 0 0 0.75rem;
