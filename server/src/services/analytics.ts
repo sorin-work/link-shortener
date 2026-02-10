@@ -2,8 +2,7 @@ import { and, count, desc, eq, gte, sql, type SQL } from 'drizzle-orm';
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { Db } from '../db/client.js';
 import { clicks } from '../db/schema.js';
-
-const DAY_MS = 86_400_000;
+import { addDays, isoDay, startOfUtcDay } from '../lib/dates.js';
 
 export interface StatsOptions {
   days: number;
@@ -43,8 +42,8 @@ function breakdown(
 }
 
 export function linkStats(db: Db, linkId: number, { days, now = new Date() }: StatsOptions) {
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  const since = new Date(today - days * DAY_MS);
+  const today = startOfUtcDay(now);
+  const since = addDays(today, -days);
   const inRange = and(eq(clicks.linkId, linkId), gte(clicks.createdAt, since));
 
   const total = db.select({ n: count() }).from(clicks).where(inRange).get()?.n ?? 0;
@@ -60,7 +59,7 @@ export function linkStats(db: Db, linkId: number, { days, now = new Date() }: St
 
   const byDay: DayCount[] = [];
   for (let i = days; i >= 1; i--) {
-    const date = new Date(today - i * DAY_MS).toISOString().slice(0, 10);
+    const date = isoDay(addDays(today, -i));
     byDay.push({ date, clicks: perDay.get(date) ?? 0 });
   }
 
