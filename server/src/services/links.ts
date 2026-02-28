@@ -70,7 +70,7 @@ export function listLinks(db: Db, config: Config, userId: number, opts: ListOpti
     page,
     limit,
     total,
-    pages: Math.floor(total / limit),
+    pages: Math.max(1, Math.ceil(total / limit)),
   };
 }
 

@@ -83,6 +83,17 @@ describe('GET /api/links', () => {
     ]);
   });
 
+  it('counts a partial last page', async () => {
+    const { app, cookie, create } = await withUser();
+    for (let i = 1; i <= 5; i++) await create({ url: `https://site${i}.example` });
+    const first = await readJson(await call(app, 'GET', '/api/links?limit=2', { cookie }));
+    expect(first.pages).toBe(3);
+    const last = await readJson(await call(app, 'GET', '/api/links?limit=2&page=3', { cookie }));
+    expect(last.links.map((l: { url: string }) => l.url)).toEqual(['https://site1.example/']);
+    const empty = await readJson(await call(app, 'GET', '/api/links?q=nothing', { cookie }));
+    expect(empty.pages).toBe(1);
+  });
+
   it('searches slug, url and title', async () => {
     const { app, cookie, create } = await withUser();
     await create({ url: 'https://blog.example/post', title: 'Spring sale' });
