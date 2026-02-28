@@ -1,0 +1,15 @@
+name: link-shortener
+
+services:
+  app:
+    build: .
+    environment:
+      BASE_URL: ${BASE_URL:-http://localhost:4415}
+      COUNTRY_HEADER: ${COUNTRY_HEADER:-cf-ipcountry}
+    volumes:
+      - data:/data
+    ports:
+      - '${WEB_PORT:-4415}:3000'
+
+volumes:
+  data:
