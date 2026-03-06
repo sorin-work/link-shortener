@@ -1,7 +1,9 @@
 import { eq } from 'drizzle-orm';
 import type { Db } from './db/client.js';
-import { links, users } from './db/schema.js';
+import { clicks, links, users } from './db/schema.js';
 import { hashPassword } from './lib/password.js';
+import { COUNTRIES, mulberry32, REFERRERS, USER_AGENTS, weighted } from './seed-data.js';
+import { buildClick } from './services/clicks.js';
 
 export const DEMO_EMAIL = 'demo@example.com';
 export const DEMO_PASSWORD = 'demo-password';
@@ -86,9 +88,11 @@ export async function seedDemo(db: Db, now = new Date()): Promise<boolean> {
     .returning()
     .get();
 
-  for (const item of DEMO_LINKS) {
+  const rand = mulberry32(4415);
+  for (const [index, item] of DEMO_LINKS.entries()) {
     const createdAt = new Date(now.getTime() - item.ageDays * 86_400_000);
-    db.insert(links)
+    const link = db
+      .insert(links)
       .values({
         userId: user.id,
         slug: item.slug,
@@ -97,7 +101,33 @@ export async function seedDemo(db: Db, now = new Date()): Promise<boolean> {
         createdAt,
         updatedAt: createdAt,
       })
-      .run();
+      .returning()
+      .get();
+
+    // A launch spike that decays, plus a steady trickle; popular links first.
+    const popularity = 1 / (1 + index * 0.35);
+    const rows: (typeof clicks.$inferInsert)[] = [];
+    for (let day = item.ageDays; day >= 0; day--) {
+      const age = item.ageDays - day;
+      const expected = popularity * (4 + 40 * Math.exp(-age / 4));
+      const count = Math.round(expected * (0.6 + rand() * 0.8));
+      for (let i = 0; i < count; i++) {
+        const at = new Date(now.getTime() - day * 86_400_000 - Math.floor(rand() * 86_400_000));
+        if (at < createdAt || at > now) continue;
+        rows.push(
+          buildClick(link.id, {
+            at,
+            userAgent: weighted(USER_AGENTS, rand),
+            referrer: weighted(REFERRERS, rand),
+            country: weighted(COUNTRIES, rand),
+          }),
+        );
+      }
+    }
+    for (let i = 0; i < rows.length; i += 500)
+      db.insert(clicks)
+        .values(rows.slice(i, i + 500))
+        .run();
   }
   return true;
 }

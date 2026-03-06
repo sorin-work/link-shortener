@@ -19,16 +19,18 @@ export function countClicks(db: Db, linkId: number): number {
   return db.select({ n: count() }).from(clicks).where(eq(clicks.linkId, linkId)).get()?.n ?? 0;
 }
 
+export function buildClick(linkId: number, info: ClickInfo): typeof clicks.$inferInsert {
+  return {
+    linkId,
+    createdAt: info.at ?? new Date(),
+    referrer: clip(info.referrer, 1024),
+    referrerHost: referrerHost(info.referrer),
+    userAgent: clip(info.userAgent, 512),
+    ...parseUserAgent(info.userAgent),
+    country: normalizeCountry(info.country),
+  };
+}
+
 export function recordClick(db: Db, link: Link, info: ClickInfo) {
-  db.insert(clicks)
-    .values({
-      linkId: link.id,
-      createdAt: info.at ?? new Date(),
-      referrer: clip(info.referrer, 1024),
-      referrerHost: referrerHost(info.referrer),
-      userAgent: clip(info.userAgent, 512),
-      ...parseUserAgent(info.userAgent),
-      country: normalizeCountry(info.country),
-    })
-    .run();
+  db.insert(clicks).values(buildClick(link.id, info)).run();
 }
