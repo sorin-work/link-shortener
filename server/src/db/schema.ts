@@ -33,6 +33,7 @@ export const links = sqliteTable(
     slug: text('slug').notNull(),
     url: text('url').notNull(),
     title: text('title'),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }),
     createdAt: createdAt(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
       .notNull()
