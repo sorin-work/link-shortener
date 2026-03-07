@@ -15,6 +15,21 @@ Self-hosted short links with click analytics.
 | Web   | Preact, Vite                                            |
 | Tests | Vitest (in-memory SQLite for the API, jsdom for the UI) |
 
+## Running with Docker
+
+```bash
+docker compose up --build
+```
+
+Open http://localhost:4415 and sign in with the demo account:
+
+- **Email:** `demo@example.com`
+- **Password:** `demo-password`
+
+The demo account is created on first start with a dozen links and three
+months of clicks. Set `SEED_DEMO=false` to start empty. The SQLite database
+lives in the `data` volume; `docker compose down -v` removes it.
+
 ## Local development
 
 You need Node 22 or newer.
