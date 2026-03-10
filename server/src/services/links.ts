@@ -14,6 +14,8 @@ export function serializeLink(link: Link, config: Config, clicks = 0) {
     url: link.url,
     title: link.title,
     clicks,
+    expiresAt: link.expiresAt?.toISOString() ?? null,
+    expired: !!link.expiresAt && link.expiresAt <= new Date(),
     createdAt: link.createdAt.toISOString(),
     updatedAt: link.updatedAt.toISOString(),
   };

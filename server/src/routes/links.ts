@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { links } from '../db/schema.js';
+import { parseExpiry } from '../lib/dates.js';
 import { badRequest, conflict } from '../lib/errors.js';
 import { checkCustomSlug } from '../lib/slug.js';
 import { normalizeDestination } from '../lib/url.js';
@@ -24,12 +25,14 @@ const createSchema = z.object({
   url: z.string().max(4096),
   slug: z.string().trim().optional(),
   title: z.string().trim().max(200).optional(),
+  expiresAt: z.string().max(40).nullable().optional(),
 });
 
 const updateSchema = z.object({
   url: z.string().max(4096).optional(),
   slug: z.string().trim().min(1).optional(),
   title: z.string().trim().max(200).nullable().optional(),
+  expiresAt: z.string().max(40).nullable().optional(),
 });
 
 export function linkRoutes({ db, config }: AppDeps) {
@@ -42,6 +45,18 @@ export function linkRoutes({ db, config }: AppDeps) {
       throw badRequest(destination.error, [{ path: 'url', message: destination.error }]);
     }
     return destination.url;
+  };
+
+  const expiryOrThrow = (value: string | null | undefined) => {
+    if (!value) return null;
+    const date = parseExpiry(value);
+    const problem = !date
+      ? 'Enter a valid date'
+      : date <= new Date()
+        ? 'Expiry must be in the future'
+        : null;
+    if (problem) throw badRequest(problem, [{ path: 'expiresAt', message: problem }]);
+    return date;
   };
 
   const customSlugOrThrow = (slug: string, exceptId?: number) => {
@@ -64,10 +79,11 @@ export function linkRoutes({ db, config }: AppDeps) {
     const input = c.req.valid('json');
     const url = destinationOrThrow(input.url);
     const slug = input.slug ? customSlugOrThrow(input.slug) : uniqueSlug(db);
+    const expiresAt = expiryOrThrow(input.expiresAt);
 
     const link = db
       .insert(links)
-      .values({ userId: c.get('user').id, slug, url, title: input.title || null })
+      .values({ userId: c.get('user').id, slug, url, title: input.title || null, expiresAt })
       .returning()
       .get();
     return c.json({ link: serializeLink(link, config) }, 201);
@@ -83,6 +99,7 @@ export function linkRoutes({ db, config }: AppDeps) {
       changes.slug = customSlugOrThrow(input.slug, link.id);
     }
     if (input.title !== undefined) changes.title = input.title || null;
+    if (input.expiresAt !== undefined) changes.expiresAt = expiryOrThrow(input.expiresAt);
 
     const updated = db.update(links).set(changes).where(eq(links.id, link.id)).returning().get();
     return c.json({ link: serializeLink(updated, config) });
