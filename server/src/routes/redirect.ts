@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import type { AppDeps } from '../app.js';
 import { links } from '../db/schema.js';
-import { notFoundPage } from '../pages.js';
+import { gonePage, notFoundPage } from '../pages.js';
 import { recordClick } from '../services/clicks.js';
 
 export function redirectRoutes({ db, config }: AppDeps) {
@@ -15,6 +15,9 @@ export function redirectRoutes({ db, config }: AppDeps) {
       .where(eq(links.slug, c.req.param('slug')))
       .get();
     if (!link) return c.html(notFoundPage(), 404);
+    if (link.expiresAt && link.expiresAt <= new Date()) {
+      return c.html(gonePage('This link has expired.'), 410);
+    }
 
     recordClick(db, link, {
       referrer: c.req.header('referer'),

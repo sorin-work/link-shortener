@@ -20,6 +20,9 @@ export function page(title: string, body: string): string {
 </html>`;
 }
 
+export const gonePage = (reason: string) =>
+  page('Link unavailable', `<h1>Link unavailable</h1><p>${reason}</p>`);
+
 export const notFoundPage = () =>
   page(
     'Link not found',
