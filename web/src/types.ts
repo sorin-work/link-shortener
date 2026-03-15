@@ -12,6 +12,8 @@ export interface Link {
   url: string;
   title: string | null;
   clicks: number;
+  expiresAt: string | null;
+  expired: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -44,6 +46,7 @@ export interface LinkInput {
   url: string;
   slug?: string;
   title?: string | null;
+  expiresAt?: string | null;
 }
 
 export interface FieldError {

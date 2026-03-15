@@ -1,11 +1,14 @@
 import { useState } from 'preact/hooks';
 import { api, ApiError, errorMessage } from '../api';
+import { todayIso } from '../format';
 import type { Link } from '../types';
 
 export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void }) {
   const [url, setUrl] = useState('');
   const [slug, setSlug] = useState('');
   const [title, setTitle] = useState('');
+  const [expiresAt, setExpiresAt] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
 
   const fieldError = (path: string) => (error instanceof ApiError ? error.field(path) : undefined);
@@ -18,10 +21,12 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
         url,
         slug: slug.trim() || undefined,
         title: title.trim() || undefined,
+        expiresAt: expiresAt || undefined,
       });
       setUrl('');
       setSlug('');
       setTitle('');
+      setExpiresAt('');
       onCreated(link);
     } catch (err) {
       setError(err instanceof ApiError ? err : errorMessage(err));
@@ -53,7 +58,22 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
         Title <span class="muted">(optional)</span>
         <input value={title} onInput={(e) => setTitle(e.currentTarget.value)} />
       </label>
+      {showOptions && (
+        <label>
+          Expires on <span class="muted">(optional)</span>
+          <input
+            type="date"
+            min={todayIso()}
+            value={expiresAt}
+            onInput={(e) => setExpiresAt(e.currentTarget.value)}
+          />
+          {fieldError('expiresAt') && <span class="field-error">{fieldError('expiresAt')}</span>}
+        </label>
+      )}
       <div class="form-actions">
+        <button type="button" class="ghost" onClick={() => setShowOptions(!showOptions)}>
+          {showOptions ? 'Fewer options' : 'More options'}
+        </button>
         {typeof error === 'string' && <p class="alert">{error}</p>}
         {error instanceof ApiError && error.fields.length === 0 && (
           <p class="alert">{error.message}</p>

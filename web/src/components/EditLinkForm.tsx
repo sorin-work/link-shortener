@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { api, ApiError, errorMessage } from '../api';
+import { todayIso } from '../format';
 import type { Link } from '../types';
 
 interface Props {
@@ -12,6 +13,7 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
   const [url, setUrl] = useState(link.url);
   const [slug, setSlug] = useState(link.slug);
   const [title, setTitle] = useState(link.title ?? '');
+  const [expiresAt, setExpiresAt] = useState(link.expiresAt?.slice(0, 10) ?? '');
   const [error, setError] = useState<ApiError | string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -26,6 +28,8 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
         url,
         slug: slug.trim(),
         title: title.trim() || null,
+        // Only send the expiry when it changed, so an unchanged timestamp isn't re-validated.
+        ...(expiresAt !== (link.expiresAt?.slice(0, 10) ?? '') && { expiresAt: expiresAt || null }),
       });
       onSaved(res.link);
     } catch (err) {
@@ -50,6 +54,16 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
       <label>
         Title
         <input value={title} onInput={(e) => setTitle(e.currentTarget.value)} />
+      </label>
+      <label>
+        Expires on <span class="muted">(leave empty to keep it forever)</span>
+        <input
+          type="date"
+          min={todayIso()}
+          value={expiresAt}
+          onInput={(e) => setExpiresAt(e.currentTarget.value)}
+        />
+        {fieldError('expiresAt') && <span class="field-error">{fieldError('expiresAt')}</span>}
       </label>
       <div class="form-actions">
         {error && !(error instanceof ApiError && error.fields.length) && (
