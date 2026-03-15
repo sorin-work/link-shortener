@@ -4,6 +4,7 @@ import { CopyButton } from '../components/CopyButton';
 import { CreateLinkForm } from '../components/CreateLinkForm';
 import { EmptyState } from '../components/EmptyState';
 import { Pagination } from '../components/Pagination';
+import { StatusBadge } from '../components/StatusBadge';
 import { displayUrl, formatNumber, timeAgo } from '../format';
 import { navigate, useLocation } from '../router';
 import type { LinkPage } from '../types';
@@ -78,6 +79,7 @@ export function LinksPage() {
                   <div class="slug-cell">
                     <span class="mono">/{link.slug}</span>
                     <CopyButton text={link.shortUrl} />
+                    <StatusBadge link={link} />
                   </div>
                 </td>
                 <td>
