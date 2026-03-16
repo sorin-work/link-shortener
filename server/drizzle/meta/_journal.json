@@ -57,6 +57,13 @@
       "when": 1772891524136,
       "tag": "0007_link_expiry",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1773683890818,
+      "tag": "0008_link_click_limit",
+      "breakpoints": true
     }
   ]
 }

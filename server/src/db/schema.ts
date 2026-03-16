@@ -34,6 +34,9 @@ export const links = sqliteTable(
     url: text('url').notNull(),
     title: text('title'),
     expiresAt: integer('expires_at', { mode: 'timestamp_ms' }),
+    maxClicks: integer('max_clicks'),
+    /** Clicks that count towards max_clicks. */
+    clickCount: integer('click_count').notNull().default(0),
     createdAt: createdAt(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
       .notNull()
