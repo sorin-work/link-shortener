@@ -6,6 +6,14 @@ import { conflict, notFound } from '../lib/errors.js';
 import { generateSlug } from '../lib/slug.js';
 import { countClicks } from './clicks.js';
 
+export type Availability = 'active' | 'expired' | 'limit_reached';
+
+export function availability(link: Link, now = new Date()): Availability {
+  if (link.expiresAt && link.expiresAt <= now) return 'expired';
+  if (link.maxClicks !== null && link.clickCount > link.maxClicks) return 'limit_reached';
+  return 'active';
+}
+
 export function serializeLink(link: Link, config: Config, clicks = 0) {
   return {
     id: link.id,
@@ -16,6 +24,9 @@ export function serializeLink(link: Link, config: Config, clicks = 0) {
     clicks,
     expiresAt: link.expiresAt?.toISOString() ?? null,
     expired: !!link.expiresAt && link.expiresAt <= new Date(),
+    maxClicks: link.maxClicks,
+    clickCount: link.clickCount,
+    status: availability(link),
     createdAt: link.createdAt.toISOString(),
     updatedAt: link.updatedAt.toISOString(),
   };

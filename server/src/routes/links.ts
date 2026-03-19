@@ -26,6 +26,7 @@ const createSchema = z.object({
   slug: z.string().trim().optional(),
   title: z.string().trim().max(200).optional(),
   expiresAt: z.string().max(40).nullable().optional(),
+  maxClicks: z.number().int().min(1).max(10_000_000).nullable().optional(),
 });
 
 const updateSchema = z.object({
@@ -33,6 +34,7 @@ const updateSchema = z.object({
   slug: z.string().trim().min(1).optional(),
   title: z.string().trim().max(200).nullable().optional(),
   expiresAt: z.string().max(40).nullable().optional(),
+  maxClicks: z.number().int().min(1).max(10_000_000).nullable().optional(),
 });
 
 export function linkRoutes({ db, config }: AppDeps) {
@@ -83,7 +85,14 @@ export function linkRoutes({ db, config }: AppDeps) {
 
     const link = db
       .insert(links)
-      .values({ userId: c.get('user').id, slug, url, title: input.title || null, expiresAt })
+      .values({
+        userId: c.get('user').id,
+        slug,
+        url,
+        title: input.title || null,
+        expiresAt,
+        maxClicks: input.maxClicks ?? null,
+      })
       .returning()
       .get();
     return c.json({ link: serializeLink(link, config) }, 201);
@@ -100,6 +109,7 @@ export function linkRoutes({ db, config }: AppDeps) {
     }
     if (input.title !== undefined) changes.title = input.title || null;
     if (input.expiresAt !== undefined) changes.expiresAt = expiryOrThrow(input.expiresAt);
+    if (input.maxClicks !== undefined) changes.maxClicks = input.maxClicks;
 
     const updated = db.update(links).set(changes).where(eq(links.id, link.id)).returning().get();
     return c.json({ link: serializeLink(updated, config) });
