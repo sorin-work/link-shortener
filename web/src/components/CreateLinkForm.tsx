@@ -8,6 +8,7 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
   const [slug, setSlug] = useState('');
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
+  const [maxClicks, setMaxClicks] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
 
@@ -22,11 +23,13 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
         slug: slug.trim() || undefined,
         title: title.trim() || undefined,
         expiresAt: expiresAt || undefined,
+        maxClicks: maxClicks ? Number(maxClicks) : undefined,
       });
       setUrl('');
       setSlug('');
       setTitle('');
       setExpiresAt('');
+      setMaxClicks('');
       onCreated(link);
     } catch (err) {
       setError(err instanceof ApiError ? err : errorMessage(err));
@@ -68,6 +71,20 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
             onInput={(e) => setExpiresAt(e.currentTarget.value)}
           />
           {fieldError('expiresAt') && <span class="field-error">{fieldError('expiresAt')}</span>}
+        </label>
+      )}
+      {showOptions && (
+        <label>
+          Click limit <span class="muted">(optional)</span>
+          <input
+            type="number"
+            min={1}
+            step={1}
+            placeholder="Unlimited"
+            value={maxClicks}
+            onInput={(e) => setMaxClicks(e.currentTarget.value)}
+          />
+          {fieldError('maxClicks') && <span class="field-error">{fieldError('maxClicks')}</span>}
         </label>
       )}
       <div class="form-actions">

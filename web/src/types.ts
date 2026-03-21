@@ -14,6 +14,9 @@ export interface Link {
   clicks: number;
   expiresAt: string | null;
   expired: boolean;
+  maxClicks: number | null;
+  clickCount: number;
+  status: 'active' | 'expired' | 'limit_reached';
   createdAt: string;
   updatedAt: string;
 }
@@ -47,6 +50,7 @@ export interface LinkInput {
   slug?: string;
   title?: string | null;
   expiresAt?: string | null;
+  maxClicks?: number | null;
 }
 
 export interface FieldError {

@@ -14,6 +14,7 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
   const [slug, setSlug] = useState(link.slug);
   const [title, setTitle] = useState(link.title ?? '');
   const [expiresAt, setExpiresAt] = useState(link.expiresAt?.slice(0, 10) ?? '');
+  const [maxClicks, setMaxClicks] = useState(link.maxClicks?.toString() ?? '');
   const [error, setError] = useState<ApiError | string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -28,6 +29,7 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
         url,
         slug: slug.trim(),
         title: title.trim() || null,
+        maxClicks: maxClicks ? Number(maxClicks) : null,
         // Only send the expiry when it changed, so an unchanged timestamp isn't re-validated.
         ...(expiresAt !== (link.expiresAt?.slice(0, 10) ?? '') && { expiresAt: expiresAt || null }),
       });
@@ -64,6 +66,18 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
           onInput={(e) => setExpiresAt(e.currentTarget.value)}
         />
         {fieldError('expiresAt') && <span class="field-error">{fieldError('expiresAt')}</span>}
+      </label>
+      <label>
+        Click limit <span class="muted">(used {link.clickCount})</span>
+        <input
+          type="number"
+          min={1}
+          step={1}
+          placeholder="Unlimited"
+          value={maxClicks}
+          onInput={(e) => setMaxClicks(e.currentTarget.value)}
+        />
+        {fieldError('maxClicks') && <span class="field-error">{fieldError('maxClicks')}</span>}
       </label>
       <div class="form-actions">
         {error && !(error instanceof ApiError && error.fields.length) && (
