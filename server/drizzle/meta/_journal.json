@@ -64,6 +64,13 @@
       "when": 1773683890818,
       "tag": "0008_link_click_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1774734157299,
+      "tag": "0009_link_password",
+      "breakpoints": true
     }
   ]
 }
