@@ -27,6 +27,7 @@ export function serializeLink(link: Link, config: Config, clicks = 0) {
     maxClicks: link.maxClicks,
     clickCount: link.clickCount,
     status: availability(link),
+    hasPassword: !!link.passwordHash,
     createdAt: link.createdAt.toISOString(),
     updatedAt: link.updatedAt.toISOString(),
   };

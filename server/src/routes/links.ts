@@ -5,6 +5,7 @@ import type { AppDeps } from '../app.js';
 import { links } from '../db/schema.js';
 import { parseExpiry } from '../lib/dates.js';
 import { badRequest, conflict } from '../lib/errors.js';
+import { hashPassword } from '../lib/password.js';
 import { checkCustomSlug } from '../lib/slug.js';
 import { normalizeDestination } from '../lib/url.js';
 import { validate } from '../lib/validate.js';
@@ -27,6 +28,7 @@ const createSchema = z.object({
   title: z.string().trim().max(200).optional(),
   expiresAt: z.string().max(40).nullable().optional(),
   maxClicks: z.number().int().min(1).max(10_000_000).nullable().optional(),
+  password: z.string().min(4, 'Password must be at least 4 characters').max(200).optional(),
 });
 
 const updateSchema = z.object({
@@ -35,6 +37,13 @@ const updateSchema = z.object({
   title: z.string().trim().max(200).nullable().optional(),
   expiresAt: z.string().max(40).nullable().optional(),
   maxClicks: z.number().int().min(1).max(10_000_000).nullable().optional(),
+  /** a new password, or null to remove protection */
+  password: z
+    .string()
+    .min(4, 'Password must be at least 4 characters')
+    .max(200)
+    .nullable()
+    .optional(),
 });
 
 export function linkRoutes({ db, config }: AppDeps) {
@@ -77,7 +86,7 @@ export function linkRoutes({ db, config }: AppDeps) {
     return c.json({ link: serializeLink(link, config, countClicks(db, link.id)) });
   });
 
-  r.post('/', validate('json', createSchema), (c) => {
+  r.post('/', validate('json', createSchema), async (c) => {
     const input = c.req.valid('json');
     const url = destinationOrThrow(input.url);
     const slug = input.slug ? customSlugOrThrow(input.slug) : uniqueSlug(db);
@@ -92,13 +101,14 @@ export function linkRoutes({ db, config }: AppDeps) {
         title: input.title || null,
         expiresAt,
         maxClicks: input.maxClicks ?? null,
+        passwordHash: input.password ? await hashPassword(input.password) : null,
       })
       .returning()
       .get();
     return c.json({ link: serializeLink(link, config) }, 201);
   });
 
-  r.patch('/:id', validate('param', idParam), validate('json', updateSchema), (c) => {
+  r.patch('/:id', validate('param', idParam), validate('json', updateSchema), async (c) => {
     const input = c.req.valid('json');
     const link = getOwnLink(db, c.get('user').id, c.req.valid('param').id);
 
@@ -110,6 +120,9 @@ export function linkRoutes({ db, config }: AppDeps) {
     if (input.title !== undefined) changes.title = input.title || null;
     if (input.expiresAt !== undefined) changes.expiresAt = expiryOrThrow(input.expiresAt);
     if (input.maxClicks !== undefined) changes.maxClicks = input.maxClicks;
+    if (input.password !== undefined) {
+      changes.passwordHash = input.password ? await hashPassword(input.password) : null;
+    }
 
     const updated = db.update(links).set(changes).where(eq(links.id, link.id)).returning().get();
     return c.json({ link: serializeLink(updated, config) });
