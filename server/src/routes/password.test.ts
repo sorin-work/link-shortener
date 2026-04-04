@@ -52,6 +52,14 @@ describe('password-protected links', () => {
     expect(await res.text()).toContain('Wrong password');
   });
 
+  it('locks out after too many wrong passwords', async () => {
+    const { app } = await protectedLink();
+    for (let i = 0; i < 10; i++) await app.request('/secret', { method: 'POST', ...form('nope') });
+    const res = await app.request('/secret', { method: 'POST', ...form('open-sesame') });
+    expect(res.status).toBe(429);
+    expect(res.headers.get('retry-after')).toBeTruthy();
+  });
+
   it('can remove the password', async () => {
     const { app, cookie, link } = await protectedLink();
     await call(app, 'PATCH', `/api/links/${link.id}`, { cookie, json: { password: null } });

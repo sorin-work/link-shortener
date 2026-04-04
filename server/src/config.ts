@@ -12,6 +12,8 @@ export interface Config {
   secureCookies: boolean;
   /** Request header a CDN or proxy puts the visitor's country code in. */
   countryHeader: string;
+  /** Trust X-Forwarded-For (set when running behind a reverse proxy). */
+  trustProxy: boolean;
   /** Create the demo account with sample data on start. */
   seedDemo: boolean;
 }
@@ -40,6 +42,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     sessionTtlDays: intFrom(env.SESSION_TTL_DAYS, 30, 'SESSION_TTL_DAYS'),
     secureCookies: boolFrom(env.SECURE_COOKIES, baseUrl.startsWith('https://')),
     countryHeader: (env.COUNTRY_HEADER || 'cf-ipcountry').toLowerCase(),
+    trustProxy: boolFrom(env.TRUST_PROXY, false),
     seedDemo: boolFrom(env.SEED_DEMO, false),
   };
 }

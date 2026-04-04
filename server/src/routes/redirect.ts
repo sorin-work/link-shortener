@@ -2,8 +2,10 @@ import { eq, sql } from 'drizzle-orm';
 import { Hono, type Context } from 'hono';
 import type { AppDeps } from '../app.js';
 import { links, type Link } from '../db/schema.js';
+import { clientIp } from '../lib/clientIp.js';
 import { verifyPassword } from '../lib/password.js';
-import { gonePage, notFoundPage, unlockPage } from '../pages.js';
+import { createRateLimiter } from '../lib/rateLimit.js';
+import { gonePage, notFoundPage, tooManyAttemptsPage, unlockPage } from '../pages.js';
 import { recordClick } from '../services/clicks.js';
 import { availability } from '../services/links.js';
 
@@ -14,6 +16,7 @@ const UNAVAILABLE: Record<string, string> = {
 
 export function redirectRoutes({ db, config }: AppDeps) {
   const r = new Hono();
+  const unlockAttempts = createRateLimiter({ windowMs: 15 * 60_000, max: 10 });
 
   const findLink = (slug: string) => db.select().from(links).where(eq(links.slug, slug)).get();
 
@@ -59,11 +62,19 @@ export function redirectRoutes({ db, config }: AppDeps) {
     if (stop) return stop;
     if (!link.passwordHash) return follow(c, link);
 
+    const key = `${link.id}:${clientIp(c, config.trustProxy)}`;
+    const limit = unlockAttempts.hit(key);
+    if (!limit.allowed) {
+      c.header('Retry-After', String(limit.retryAfter));
+      return c.html(tooManyAttemptsPage(limit.retryAfter), 429);
+    }
+
     const form = await c.req.parseBody();
     const password = typeof form.password === 'string' ? form.password : '';
     if (!(await verifyPassword(password, link.passwordHash))) {
       return c.html(unlockPage(link, 'Wrong password, try again.'), 401);
     }
+    unlockAttempts.reset(key);
     return follow(c, link);
   });
 

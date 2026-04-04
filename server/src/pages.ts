@@ -39,6 +39,12 @@ ${error ? `<p class="error">${error}</p>` : ''}
 </form>`,
   );
 
+export const tooManyAttemptsPage = (retryAfter: number) =>
+  page(
+    'Too many attempts',
+    `<h1>Too many attempts</h1><p>Try again in ${Math.ceil(retryAfter / 60)} minute(s).</p>`,
+  );
+
 export const notFoundPage = () =>
   page(
     'Link not found',
