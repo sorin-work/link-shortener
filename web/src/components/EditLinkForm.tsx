@@ -15,6 +15,8 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
   const [title, setTitle] = useState(link.title ?? '');
   const [expiresAt, setExpiresAt] = useState(link.expiresAt?.slice(0, 10) ?? '');
   const [maxClicks, setMaxClicks] = useState(link.maxClicks?.toString() ?? '');
+  const [password, setPassword] = useState('');
+  const [removePassword, setRemovePassword] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -30,6 +32,7 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
         slug: slug.trim(),
         title: title.trim() || null,
         maxClicks: maxClicks ? Number(maxClicks) : null,
+        ...(removePassword ? { password: null } : password ? { password } : {}),
         // Only send the expiry when it changed, so an unchanged timestamp isn't re-validated.
         ...(expiresAt !== (link.expiresAt?.slice(0, 10) ?? '') && { expiresAt: expiresAt || null }),
       });
@@ -79,6 +82,30 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
         />
         {fieldError('maxClicks') && <span class="field-error">{fieldError('maxClicks')}</span>}
       </label>
+      <label>
+        {link.hasPassword ? 'New password' : 'Password'}{' '}
+        <span class="muted">
+          {link.hasPassword ? '(leave empty to keep the current one)' : '(optional)'}
+        </span>
+        <input
+          type="password"
+          autocomplete="new-password"
+          value={password}
+          disabled={removePassword}
+          onInput={(e) => setPassword(e.currentTarget.value)}
+        />
+        {fieldError('password') && <span class="field-error">{fieldError('password')}</span>}
+      </label>
+      {link.hasPassword && (
+        <label class="checkbox">
+          <input
+            type="checkbox"
+            checked={removePassword}
+            onChange={(e) => setRemovePassword(e.currentTarget.checked)}
+          />
+          Remove password protection
+        </label>
+      )}
       <div class="form-actions">
         {error && !(error instanceof ApiError && error.fields.length) && (
           <p class="alert">{typeof error === 'string' ? error : error.message}</p>

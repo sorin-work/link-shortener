@@ -9,6 +9,7 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [maxClicks, setMaxClicks] = useState('');
+  const [password, setPassword] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
 
@@ -24,12 +25,14 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
         title: title.trim() || undefined,
         expiresAt: expiresAt || undefined,
         maxClicks: maxClicks ? Number(maxClicks) : undefined,
+        password: password || undefined,
       });
       setUrl('');
       setSlug('');
       setTitle('');
       setExpiresAt('');
       setMaxClicks('');
+      setPassword('');
       onCreated(link);
     } catch (err) {
       setError(err instanceof ApiError ? err : errorMessage(err));
@@ -85,6 +88,19 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
             onInput={(e) => setMaxClicks(e.currentTarget.value)}
           />
           {fieldError('maxClicks') && <span class="field-error">{fieldError('maxClicks')}</span>}
+        </label>
+      )}
+      {showOptions && (
+        <label>
+          Password <span class="muted">(optional)</span>
+          <input
+            type="password"
+            autocomplete="new-password"
+            placeholder="Visitors must enter it first"
+            value={password}
+            onInput={(e) => setPassword(e.currentTarget.value)}
+          />
+          {fieldError('password') && <span class="field-error">{fieldError('password')}</span>}
         </label>
       )}
       <div class="form-actions">

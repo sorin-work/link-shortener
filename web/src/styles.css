@@ -53,6 +53,13 @@ label {
   font-weight: 500;
 }
 
+label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+
 input,
 select,
 textarea {
