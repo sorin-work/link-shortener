@@ -1,5 +1,14 @@
 import type { Link } from '../types';
 
+export function StatusBadges({ link }: { link: Link }) {
+  return (
+    <>
+      <StatusBadge link={link} />
+      {link.hasPassword && <span class="badge">Protected</span>}
+    </>
+  );
+}
+
 export function StatusBadge({ link }: { link: Link }) {
   if (link.expired) return <span class="badge badge-muted">Expired</span>;
   if (link.status === 'limit_reached') return <span class="badge badge-muted">Limit reached</span>;

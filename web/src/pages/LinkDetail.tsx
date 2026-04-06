@@ -4,7 +4,7 @@ import { BarChart } from '../components/BarChart';
 import { Breakdown } from '../components/Breakdown';
 import { CopyButton } from '../components/CopyButton';
 import { EditLinkForm } from '../components/EditLinkForm';
-import { StatusBadge } from '../components/StatusBadge';
+import { StatusBadges } from '../components/StatusBadge';
 import { formatDate, formatNumber } from '../format';
 import { Link as RouterLink, navigate } from '../router';
 import type { Link, LinkStats } from '../types';
@@ -65,7 +65,7 @@ export function LinkDetailPage({ id }: { id: number }) {
               {link.shortUrl}
             </a>
             <CopyButton text={link.shortUrl} />
-            <StatusBadge link={link} />
+            <StatusBadges link={link} />
           </div>
           <p class="muted truncate">→ {link.url}</p>
         </div>
