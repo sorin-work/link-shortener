@@ -5,8 +5,10 @@ import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { users, type User } from '../db/schema.js';
 import { requireUser } from '../middleware/auth.js';
-import { conflict, unauthorized } from '../lib/errors.js';
+import { conflict, HttpError, unauthorized } from '../lib/errors.js';
+import { clientIp } from '../lib/clientIp.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
+import { createRateLimiter } from '../lib/rateLimit.js';
 import { createSession, deleteSession, SESSION_COOKIE } from '../lib/sessions.js';
 import { validate } from '../lib/validate.js';
 import type { AppEnv } from '../types.js';
@@ -38,6 +40,15 @@ export function publicUser(user: User) {
 
 export function authRoutes({ db, config }: AppDeps) {
   const r = new Hono<AppEnv>();
+  const attempts = createRateLimiter({ windowMs: 15 * 60_000, max: 20 });
+
+  const throttle = (c: Context, action: string) => {
+    const result = attempts.hit(`${action}:${clientIp(c, config.trustProxy)}`);
+    if (!result.allowed) {
+      c.header('Retry-After', String(result.retryAfter));
+      throw new HttpError(429, 'Too many attempts, try again later', 'rate_limited');
+    }
+  };
 
   const startSession = (c: Context, userId: number) => {
     const { token, expiresAt } = createSession(db, userId, config.sessionTtlDays);
@@ -51,6 +62,7 @@ export function authRoutes({ db, config }: AppDeps) {
   };
 
   r.post('/register', validate('json', registerSchema), async (c) => {
+    throttle(c, 'register');
     const input = c.req.valid('json');
     const existing = db
       .select({ id: users.id })
@@ -73,6 +85,7 @@ export function authRoutes({ db, config }: AppDeps) {
   });
 
   r.post('/login', validate('json', loginSchema), async (c) => {
+    throttle(c, 'login');
     const { email, password } = c.req.valid('json');
     const user = db.select().from(users).where(eq(users.email, email)).get();
     const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);

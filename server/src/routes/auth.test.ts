@@ -85,6 +85,20 @@ describe('POST /api/auth/login', () => {
   });
 });
 
+describe('rate limiting', () => {
+  it('throttles repeated login attempts', async () => {
+    const { app } = setup();
+    const attempt = () =>
+      call(app, 'POST', '/api/auth/login', {
+        json: { email: 'nobody@example.com', password: 'guess' },
+      });
+    for (let i = 0; i < 20; i++) expect((await attempt()).status).toBe(401);
+    const res = await attempt();
+    expect(res.status).toBe(429);
+    expect((await readJson(res)).error.code).toBe('rate_limited');
+  });
+});
+
 describe('sessions', () => {
   it('requires a cookie for /me', async () => {
     const { app } = setup();
