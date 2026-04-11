@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { secureHeaders } from 'hono/secure-headers';
 import type { Config } from './config.js';
 import type { Db } from './db/client.js';
 import { errorHandler, notFoundHandler } from './lib/errors.js';
@@ -19,6 +20,19 @@ export function createApp(deps: AppDeps) {
   const app = new Hono();
   app.onError(errorHandler);
   app.notFound(notFoundHandler);
+  app.use(
+    '*',
+    secureHeaders({
+      contentSecurityPolicy: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
+      },
+      referrerPolicy: 'strict-origin-when-cross-origin',
+    }),
+  );
 
   app.get('/api/health', (c) => {
     db.get(sql`select 1`);

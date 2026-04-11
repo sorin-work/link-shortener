@@ -10,6 +10,16 @@ describe('GET /api/health', () => {
   });
 });
 
+describe('security headers', () => {
+  it('are set on every response', async () => {
+    const { app } = setup();
+    const res = await call(app, 'GET', '/api/health');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(res.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+    expect(res.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
+  });
+});
+
 describe('unknown routes', () => {
   it('return a json 404', async () => {
     const { app } = setup();
