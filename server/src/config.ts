@@ -14,6 +14,7 @@ export interface Config {
   countryHeader: string;
   /** Trust X-Forwarded-For (set when running behind a reverse proxy). */
   trustProxy: boolean;
+  logRequests: boolean;
   /** Create the demo account with sample data on start. */
   seedDemo: boolean;
 }
@@ -43,6 +44,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     secureCookies: boolFrom(env.SECURE_COOKIES, baseUrl.startsWith('https://')),
     countryHeader: (env.COUNTRY_HEADER || 'cf-ipcountry').toLowerCase(),
     trustProxy: boolFrom(env.TRUST_PROXY, false),
+    logRequests: boolFrom(env.LOG_REQUESTS, true),
     seedDemo: boolFrom(env.SEED_DEMO, false),
   };
 }

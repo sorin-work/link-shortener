@@ -6,6 +6,7 @@ export function setup(overrides: Partial<Config> = {}) {
   const config: Config = {
     ...loadConfig({ BASE_URL: 'http://sho.rt' }),
     databasePath: ':memory:',
+    logRequests: false,
     ...overrides,
   };
   const db = openDatabase(':memory:', config.migrationsDir);
