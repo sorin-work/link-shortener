@@ -61,6 +61,7 @@ export const clicks = sqliteTable(
     browser: text('browser').notNull().default('Unknown'),
     os: text('os').notNull().default('Unknown'),
     country: text('country'),
+    isBot: integer('is_bot', { mode: 'boolean' }).notNull().default(false),
   },
   (t) => [index('clicks_link_created_idx').on(t.linkId, t.createdAt)],
 );

@@ -1,6 +1,7 @@
 import { count, eq } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { clicks, type Link } from '../db/schema.js';
+import { isBot } from '../lib/bots.js';
 import { normalizeCountry } from '../lib/country.js';
 import { referrerHost } from '../lib/referrer.js';
 import { parseUserAgent } from '../lib/useragent.js';
@@ -28,6 +29,7 @@ export function buildClick(linkId: number, info: ClickInfo): typeof clicks.$infe
     userAgent: clip(info.userAgent, 512),
     ...parseUserAgent(info.userAgent),
     country: normalizeCountry(info.country),
+    isBot: isBot(info.userAgent),
   };
 }
 
