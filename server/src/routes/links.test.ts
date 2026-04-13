@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { call, readJson, registerUser, setup } from '../test/helpers.js';
+import { BROWSER_UA, call, readJson, registerUser, setup } from '../test/helpers.js';
 
 async function withUser() {
   const ctx = setup();
@@ -124,8 +124,9 @@ describe('GET /api/links', () => {
     const { app, cookie, create } = await withUser();
     const { body } = await create({ url: 'https://one.example', slug: 'counted' });
     await create({ url: 'https://two.example' });
-    await call(app, 'GET', '/counted');
-    await call(app, 'GET', '/counted');
+    await call(app, 'GET', '/counted', { headers: { 'user-agent': BROWSER_UA } });
+    await call(app, 'GET', '/counted', { headers: { 'user-agent': BROWSER_UA } });
+    await call(app, 'GET', '/counted', { headers: { 'user-agent': 'Twitterbot/1.0' } });
     const list = await readJson(await call(app, 'GET', '/api/links', { cookie }));
     expect(list.links.map((l: { clicks: number }) => l.clicks)).toEqual([0, 2]);
     const one = await readJson(await call(app, 'GET', `/api/links/${body.link.id}`, { cookie }));

@@ -10,7 +10,10 @@ import { linkStats } from '../services/analytics.js';
 import type { AppEnv } from '../types.js';
 
 const params = z.object({ id: z.coerce.number().int().positive() });
-const query = z.object({ days: z.coerce.number().int().min(1).max(365).default(30) });
+const query = z.object({
+  days: z.coerce.number().int().min(1).max(365).default(30),
+  bots: z.enum(['include', 'exclude']).default('exclude'),
+});
 
 export function statsRoutes({ db }: AppDeps) {
   const r = new Hono<AppEnv>();
@@ -20,7 +23,8 @@ export function statsRoutes({ db }: AppDeps) {
     const { id } = c.req.valid('param');
     const link = db.select().from(links).where(eq(links.id, id)).get();
     if (!link) throw notFound('Link not found');
-    return c.json(linkStats(db, link.id, { days: c.req.valid('query').days }));
+    const { days, bots } = c.req.valid('query');
+    return c.json(linkStats(db, link.id, { days, includeBots: bots === 'include' }));
   });
 
   return r;

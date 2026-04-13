@@ -33,6 +33,10 @@ export function call(app: TestApp, method: string, path: string, opts: RequestOp
   return app.request(path, { method, headers, body });
 }
 
+/** A desktop Chrome user agent, for requests that should count as human clicks. */
+export const BROWSER_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
+
 export function sessionCookie(res: Response): string {
   const header = res.headers.get('set-cookie');
   if (!header) throw new Error('response did not set a cookie');

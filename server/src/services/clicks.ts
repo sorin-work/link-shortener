@@ -1,4 +1,4 @@
-import { count, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { clicks, type Link } from '../db/schema.js';
 import { isBot } from '../lib/bots.js';
@@ -17,7 +17,13 @@ const clip = (value: string | null | undefined, max: number) =>
   value ? value.slice(0, max) : null;
 
 export function countClicks(db: Db, linkId: number): number {
-  return db.select({ n: count() }).from(clicks).where(eq(clicks.linkId, linkId)).get()?.n ?? 0;
+  return (
+    db
+      .select({ n: count() })
+      .from(clicks)
+      .where(and(eq(clicks.linkId, linkId), eq(clicks.isBot, false)))
+      .get()?.n ?? 0
+  );
 }
 
 export function buildClick(linkId: number, info: ClickInfo): typeof clicks.$inferInsert {

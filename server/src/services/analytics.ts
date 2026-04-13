@@ -7,6 +7,7 @@ import { addDays, isoDay, startOfUtcDay } from '../lib/dates.js';
 export interface StatsOptions {
   days: number;
   now?: Date;
+  includeBots?: boolean;
 }
 
 export interface DayCount {
@@ -41,10 +42,20 @@ function breakdown(
     .map((row) => ({ name: (row.name as string | null) ?? fallback, clicks: row.n }));
 }
 
-export function linkStats(db: Db, linkId: number, { days, now = new Date() }: StatsOptions) {
+export function linkStats(
+  db: Db,
+  linkId: number,
+  { days, now = new Date(), includeBots = false }: StatsOptions,
+) {
   const today = startOfUtcDay(now);
   const since = addDays(today, -days);
-  const inRange = and(eq(clicks.linkId, linkId), gte(clicks.createdAt, since));
+  const range = and(eq(clicks.linkId, linkId), gte(clicks.createdAt, since));
+  const inRange = includeBots ? range : and(range, eq(clicks.isBot, false));
+  const bots = db
+    .select({ n: count() })
+    .from(clicks)
+    .where(and(range, eq(clicks.isBot, true)))
+    .get()?.n;
 
   const total = db.select({ n: count() }).from(clicks).where(inRange).get()?.n ?? 0;
   const perDay = new Map(
@@ -66,6 +77,8 @@ export function linkStats(db: Db, linkId: number, { days, now = new Date() }: St
   return {
     range: { days, from: byDay[0]?.date, to: byDay.at(-1)?.date },
     total,
+    bots: bots ?? 0,
+    includeBots,
     byDay,
     referrers: breakdown(db, inRange, clicks.referrerHost, 'Direct'),
     devices: breakdown(db, inRange, clicks.device, 'unknown'),
