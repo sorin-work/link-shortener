@@ -78,6 +78,36 @@ describe('GET /api/links/:id/stats', () => {
     expect(body.byDay).toHaveLength(90);
   });
 
+  it('leaves bot clicks out unless asked for', async () => {
+    const { app, db, cookie, link } = await linkWithClicks();
+    db.insert(clicks)
+      .values([
+        { linkId: link.id, createdAt: new Date(Date.now() - DAY), isBot: true },
+        { linkId: link.id, createdAt: new Date(Date.now() - DAY), isBot: true },
+      ])
+      .run();
+    const human = await readJson(await call(app, 'GET', `/api/links/${link.id}/stats`, { cookie }));
+    expect(human.total).toBe(3);
+    expect(human.bots).toBe(2);
+    const all = await readJson(
+      await call(app, 'GET', `/api/links/${link.id}/stats?bots=include`, { cookie }),
+    );
+    expect(all.total).toBe(5);
+    const list = await readJson(await call(app, 'GET', `/api/links/${link.id}`, { cookie }));
+    expect(list.link.clicks).toBe(4);
+  });
+
+  it('flags crawler redirects as bots', async () => {
+    const { app, db } = setup();
+    const cookie = await registerUser(app);
+    const { link } = await createLink(app, cookie, { url: 'https://example.com', slug: 'unfurl' });
+    await call(app, 'GET', '/unfurl', {
+      headers: { 'user-agent': 'Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)' },
+    });
+    const [row] = db.select().from(clicks).all();
+    expect(row).toMatchObject({ linkId: link.id, isBot: true });
+  });
+
   it('validates the range', async () => {
     const { app, cookie, link } = await linkWithClicks();
     const res = await call(app, 'GET', `/api/links/${link.id}/stats?days=0`, { cookie });
