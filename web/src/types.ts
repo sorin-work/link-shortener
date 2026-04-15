@@ -38,6 +38,8 @@ export interface NamedCount {
 export interface LinkStats {
   range: { days: number; from: string; to: string };
   total: number;
+  bots: number;
+  includeBots: boolean;
   byDay: { date: string; clicks: number }[];
   referrers: NamedCount[];
   devices: NamedCount[];

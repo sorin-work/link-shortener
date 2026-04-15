@@ -15,13 +15,14 @@ export function LinkDetailPage({ id }: { id: number }) {
   const [editing, setEditing] = useState(false);
   const [stats, setStats] = useState<LinkStats | null>(null);
   const [days, setDays] = useState(30);
+  const [includeBots, setIncludeBots] = useState(false);
 
   useEffect(() => {
     api
-      .getStats(id, days)
+      .getStats(id, days, includeBots)
       .then(setStats)
       .catch(() => setStats(null));
-  }, [id, days]);
+  }, [id, days, includeBots]);
 
   useEffect(() => {
     setLink(null);
@@ -117,8 +118,19 @@ export function LinkDetailPage({ id }: { id: number }) {
         {stats && (
           <p class="muted">
             {formatNumber(stats.total)} clicks in the last {stats.range.days} days
+            {stats.bots > 0 && !stats.includeBots && (
+              <> (plus {formatNumber(stats.bots)} from bots and link previews)</>
+            )}
           </p>
         )}
+        <label class="checkbox">
+          <input
+            type="checkbox"
+            checked={includeBots}
+            onChange={(e) => setIncludeBots(e.currentTarget.checked)}
+          />
+          Include bots and link previews
+        </label>
         {stats ? <BarChart data={stats.byDay} /> : <p class="muted">Loading stats…</p>}
       </div>
 

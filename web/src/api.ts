@@ -63,6 +63,9 @@ export const api = {
   updateLink: (id: number, input: Partial<LinkInput>) =>
     request<{ link: Link }>('PATCH', `/links/${id}`, input),
   deleteLink: (id: number) => request<void>('DELETE', `/links/${id}`),
-  getStats: (id: number, days: number) =>
-    request<LinkStats>('GET', `/links/${id}/stats${toQuery({ days })}`),
+  getStats: (id: number, days: number, includeBots = false) =>
+    request<LinkStats>(
+      'GET',
+      `/links/${id}/stats${toQuery({ days, bots: includeBots ? 'include' : undefined })}`,
+    ),
 };
