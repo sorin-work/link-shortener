@@ -7,6 +7,7 @@ import type { Db } from './db/client.js';
 import { errorHandler, notFoundHandler } from './lib/errors.js';
 import { authRoutes } from './routes/auth.js';
 import { linkRoutes } from './routes/links.js';
+import { qrRoutes } from './routes/qr.js';
 import { redirectRoutes } from './routes/redirect.js';
 import { statsRoutes } from './routes/stats.js';
 import { mountWeb } from './static.js';
@@ -44,6 +45,7 @@ export function createApp(deps: AppDeps) {
   app.route('/api/auth', authRoutes(deps));
   app.route('/api/links', linkRoutes(deps));
   app.route('/api/links', statsRoutes(deps));
+  app.route('/api/links', qrRoutes(deps));
 
   mountWeb(app, deps.config.webDir);
 
