@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { api, ApiError, errorMessage } from '../api';
 import { todayIso } from '../format';
+import { UtmBuilder } from './UtmBuilder';
 import type { Link } from '../types';
 
 export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void }) {
@@ -102,6 +103,11 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
           />
           {fieldError('password') && <span class="field-error">{fieldError('password')}</span>}
         </label>
+      )}
+      {showOptions && (
+        <div class="wide">
+          <UtmBuilder url={url} onApply={setUrl} />
+        </div>
       )}
       <div class="form-actions">
         <button type="button" class="ghost" onClick={() => setShowOptions(!showOptions)}>
