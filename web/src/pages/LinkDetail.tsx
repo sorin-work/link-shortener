@@ -4,6 +4,7 @@ import { BarChart } from '../components/BarChart';
 import { Breakdown } from '../components/Breakdown';
 import { CopyButton } from '../components/CopyButton';
 import { EditLinkForm } from '../components/EditLinkForm';
+import { QrPanel } from '../components/QrPanel';
 import { StatusBadges } from '../components/StatusBadge';
 import { formatDate, formatNumber } from '../format';
 import { Link as RouterLink, navigate } from '../router';
@@ -141,6 +142,7 @@ export function LinkDetailPage({ id }: { id: number }) {
           <Breakdown title="Devices" rows={stats.devices} />
           <Breakdown title="Browsers" rows={stats.browsers} />
           <Breakdown title="Operating systems" rows={stats.os} />
+          <QrPanel linkId={link.id} slug={link.slug} />
         </div>
       )}
     </section>

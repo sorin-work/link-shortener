@@ -81,6 +81,16 @@ button {
   cursor: pointer;
 }
 
+a.button {
+  display: inline-block;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
@@ -404,6 +414,22 @@ button.danger {
   flex: 1;
   font-size: 0.8rem;
   max-width: none;
+}
+
+.qr-panel {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+}
+
+.qr-panel img {
+  background: #fff;
+  border-radius: 6px;
+}
+
+.qr-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .empty {
