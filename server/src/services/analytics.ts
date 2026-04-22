@@ -42,6 +42,20 @@ function breakdown(
     .map((row) => ({ name: (row.name as string | null) ?? fallback, clicks: row.n }));
 }
 
+const EXPORT_LIMIT = 100_000;
+
+/** Raw clicks for a CSV export, oldest first. */
+export function clicksForExport(db: Db, linkId: number, { days, now = new Date() }: StatsOptions) {
+  const since = addDays(startOfUtcDay(now), -days);
+  return db
+    .select()
+    .from(clicks)
+    .where(and(eq(clicks.linkId, linkId), gte(clicks.createdAt, since)))
+    .orderBy(clicks.createdAt, clicks.id)
+    .limit(EXPORT_LIMIT)
+    .all();
+}
+
 export function linkStats(
   db: Db,
   linkId: number,
