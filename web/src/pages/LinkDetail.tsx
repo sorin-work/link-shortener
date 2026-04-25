@@ -72,6 +72,9 @@ export function LinkDetailPage({ id }: { id: number }) {
           <p class="muted truncate">→ {link.url}</p>
         </div>
         <div class="actions">
+          <a class="button" href={`/api/links/${link.id}/clicks.csv?days=${days}`} download>
+            Export CSV
+          </a>
           <button type="button" onClick={() => setEditing(true)} disabled={editing}>
             Edit
           </button>
