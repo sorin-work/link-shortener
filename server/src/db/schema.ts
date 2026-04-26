@@ -66,6 +66,25 @@ export const clicks = sqliteTable(
   (t) => [index('clicks_link_created_idx').on(t.linkId, t.createdAt)],
 );
 
+export const apiKeys = sqliteTable(
+  'api_keys',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    /** first characters of the key, shown so people can tell keys apart */
+    prefix: text('prefix').notNull(),
+    keyHash: text('key_hash').notNull().unique(),
+    createdAt: createdAt(),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' }),
+    revokedAt: integer('revoked_at', { mode: 'timestamp_ms' }),
+  },
+  (t) => [index('api_keys_user_idx').on(t.userId)],
+);
+
 export type User = typeof users.$inferSelect;
 export type Link = typeof links.$inferSelect;
 export type Click = typeof clicks.$inferSelect;
+export type ApiKey = typeof apiKeys.$inferSelect;
