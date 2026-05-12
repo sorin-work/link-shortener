@@ -5,6 +5,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import type { Config } from './config.js';
 import type { Db } from './db/client.js';
 import { errorHandler, notFoundHandler } from './lib/errors.js';
+import { apiKeyRoutes } from './routes/apiKeys.js';
 import { authRoutes } from './routes/auth.js';
 import { linkRoutes } from './routes/links.js';
 import { qrRoutes } from './routes/qr.js';
@@ -43,6 +44,7 @@ export function createApp(deps: AppDeps) {
   });
 
   app.route('/api/auth', authRoutes(deps));
+  app.route('/api/keys', apiKeyRoutes(deps));
   app.route('/api/links', linkRoutes(deps));
   app.route('/api/links', statsRoutes(deps));
   app.route('/api/links', qrRoutes(deps));
