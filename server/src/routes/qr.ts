@@ -16,7 +16,7 @@ const query = z.object({
 
 export function qrRoutes({ db, config }: AppDeps) {
   const r = new Hono<AppEnv>();
-  r.use('*', requireUser(db));
+  r.use('*', requireUser(db, { allowApiKey: true }));
 
   r.get('/:id/qr', validate('param', params), validate('query', query), async (c) => {
     const link = getOwnLink(db, c.get('user').id, c.req.valid('param').id);

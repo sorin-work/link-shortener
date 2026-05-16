@@ -48,7 +48,7 @@ const updateSchema = z.object({
 
 export function linkRoutes({ db, config }: AppDeps) {
   const r = new Hono<AppEnv>();
-  r.use('*', requireUser(db));
+  r.use('*', requireUser(db, { allowApiKey: true }));
 
   const destinationOrThrow = (url: string) => {
     const destination = normalizeDestination(url, config.baseUrl);

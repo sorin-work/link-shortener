@@ -19,7 +19,7 @@ const query = z.object({
 
 export function statsRoutes({ db }: AppDeps) {
   const r = new Hono<AppEnv>();
-  r.use('*', requireUser(db));
+  r.use('*', requireUser(db, { allowApiKey: true }));
 
   r.get('/:id/stats', validate('param', params), validate('query', query), (c) => {
     const { id } = c.req.valid('param');
