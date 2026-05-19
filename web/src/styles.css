@@ -432,6 +432,20 @@ button.danger {
   gap: 0.5rem;
 }
 
+.notice {
+  display: grid;
+  gap: 0.5rem;
+  border-color: var(--accent);
+}
+
+.notice code {
+  word-break: break-all;
+}
+
+tr.revoked td {
+  color: var(--muted);
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;

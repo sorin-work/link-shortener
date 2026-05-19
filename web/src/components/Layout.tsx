@@ -2,7 +2,10 @@ import type { ComponentChildren } from 'preact';
 import { useAuth } from '../auth';
 import { Link, useLocation } from '../router';
 
-const NAV = [{ href: '/', label: 'Links' }];
+const NAV = [
+  { href: '/', label: 'Links' },
+  { href: '/keys', label: 'API keys' },
+];
 
 export function Layout({ children }: { children: ComponentChildren }) {
   const { user, signOut } = useAuth();
@@ -19,7 +22,13 @@ export function Layout({ children }: { children: ComponentChildren }) {
             <Link
               key={item.href}
               href={item.href}
-              class={path === item.href || path.startsWith(`${item.href}/`) ? 'active' : ''}
+              class={
+                path === item.href ||
+                (item.href !== '/' && path.startsWith(`${item.href}/`)) ||
+                (item.href === '/' && path.startsWith('/links/'))
+                  ? 'active'
+                  : ''
+              }
             >
               {item.label}
             </Link>

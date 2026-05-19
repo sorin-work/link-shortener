@@ -57,6 +57,15 @@ export interface LinkInput {
   password?: string | null;
 }
 
+export interface ApiKey {
+  id: number;
+  name: string;
+  prefix: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+}
+
 export interface FieldError {
   path: string;
   message: string;
