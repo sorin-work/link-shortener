@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import { api, ApiError, errorMessage } from '../api';
 import { todayIso } from '../format';
 import { UtmBuilder } from './UtmBuilder';
@@ -13,11 +13,17 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
   const [password, setPassword] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
+  const [busy, setBusy] = useState(false);
+  // State updates are async; the ref blocks a second submit in the same tick.
+  const pending = useRef(false);
 
   const fieldError = (path: string) => (error instanceof ApiError ? error.field(path) : undefined);
 
   async function submit(e: Event) {
     e.preventDefault();
+    if (pending.current) return;
+    pending.current = true;
+    setBusy(true);
     setError(null);
     try {
       const { link } = await api.createLink({
@@ -37,6 +43,9 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
       onCreated(link);
     } catch (err) {
       setError(err instanceof ApiError ? err : errorMessage(err));
+    } finally {
+      pending.current = false;
+      setBusy(false);
     }
   }
 
@@ -117,8 +126,8 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
         {error instanceof ApiError && error.fields.length === 0 && (
           <p class="alert">{error.message}</p>
         )}
-        <button type="submit" class="primary">
-          Shorten
+        <button type="submit" class="primary" disabled={busy}>
+          {busy ? 'Shortening…' : 'Shorten'}
         </button>
       </div>
     </form>
