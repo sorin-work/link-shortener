@@ -14,6 +14,14 @@ describe('GET /:slug', () => {
     expect(res.headers.get('cache-control')).toContain('no-store');
   });
 
+  it('ignores the case of the slug in the url', async () => {
+    const { app } = setup();
+    const cookie = await registerUser(app);
+    const { link } = await createLink(app, cookie, { url: 'https://example.com/' });
+    const res = await call(app, 'GET', `/${link.slug.toUpperCase()}`);
+    expect(res.status).toBe(302);
+  });
+
   it('shows a not found page for unknown slugs', async () => {
     const { app } = setup();
     const res = await call(app, 'GET', '/missing');
