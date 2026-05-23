@@ -9,6 +9,11 @@ export function addDays(date: Date, days: number): Date {
   return new Date(date.getTime() + days * DAY_MS);
 }
 
+/** Start of a window of `days` UTC days that ends with (and includes) today. */
+export function windowStart(now: Date, days: number): Date {
+  return addDays(startOfUtcDay(now), -(days - 1));
+}
+
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**

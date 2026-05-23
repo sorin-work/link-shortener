@@ -69,6 +69,17 @@ describe('GET /api/links/:id/stats', () => {
     expect(body.countries[0]).toEqual({ name: 'US', clicks: 2 });
   });
 
+  it("includes today's clicks in the daily series", async () => {
+    const { app, db, cookie, link } = await linkWithClicks();
+    db.insert(clicks).values({ linkId: link.id, createdAt: new Date() }).run();
+    const body = await readJson(await call(app, 'GET', `/api/links/${link.id}/stats`, { cookie }));
+    const today = new Date().toISOString().slice(0, 10);
+    expect(body.byDay.at(-1)).toEqual({ date: today, clicks: 1 });
+    expect(body.range.to).toBe(today);
+    const sum = body.byDay.reduce((n: number, d: { clicks: number }) => n + d.clicks, 0);
+    expect(sum).toBe(body.total);
+  });
+
   it('widens the range with ?days', async () => {
     const { app, cookie, link } = await linkWithClicks();
     const body = await readJson(

@@ -2,7 +2,7 @@ import { and, count, desc, eq, gte, sql, type SQL } from 'drizzle-orm';
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { Db } from '../db/client.js';
 import { clicks } from '../db/schema.js';
-import { addDays, isoDay, startOfUtcDay } from '../lib/dates.js';
+import { addDays, isoDay, startOfUtcDay, windowStart } from '../lib/dates.js';
 
 export interface StatsOptions {
   days: number;
@@ -46,7 +46,7 @@ const EXPORT_LIMIT = 100_000;
 
 /** Raw clicks for a CSV export, oldest first. */
 export function clicksForExport(db: Db, linkId: number, { days, now = new Date() }: StatsOptions) {
-  const since = addDays(startOfUtcDay(now), -days);
+  const since = windowStart(now, days);
   return db
     .select()
     .from(clicks)
@@ -62,7 +62,7 @@ export function linkStats(
   { days, now = new Date(), includeBots = false }: StatsOptions,
 ) {
   const today = startOfUtcDay(now);
-  const since = addDays(today, -days);
+  const since = windowStart(now, days);
   const range = and(eq(clicks.linkId, linkId), gte(clicks.createdAt, since));
   const inRange = includeBots ? range : and(range, eq(clicks.isBot, false));
   const bots = db
@@ -83,7 +83,7 @@ export function linkStats(
   );
 
   const byDay: DayCount[] = [];
-  for (let i = days; i >= 1; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const date = isoDay(addDays(today, -i));
     byDay.push({ date, clicks: perDay.get(date) ?? 0 });
   }
