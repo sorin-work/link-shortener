@@ -4,6 +4,7 @@ import { CopyButton } from '../components/CopyButton';
 import { CreateLinkForm } from '../components/CreateLinkForm';
 import { EmptyState } from '../components/EmptyState';
 import { Pagination } from '../components/Pagination';
+import { Summary } from '../components/Summary';
 import { StatusBadges } from '../components/StatusBadge';
 import { displayUrl, formatNumber, timeAgo } from '../format';
 import { navigate, useLocation } from '../router';
@@ -37,6 +38,7 @@ export function LinksPage() {
   return (
     <section class="stack">
       <h1>Links</h1>
+      <Summary version={version} />
       <CreateLinkForm onCreated={() => setVersion((v) => v + 1)} />
       <form
         class="search"

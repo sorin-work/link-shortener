@@ -57,6 +57,13 @@ export interface LinkInput {
   password?: string | null;
 }
 
+export interface Overview {
+  links: number;
+  clicksThisWeek: number;
+  clicksLastWeek: number;
+  topLinks: { id: number; slug: string; title: string | null; clicks: number }[];
+}
+
 export interface ApiKey {
   id: number;
   name: string;
