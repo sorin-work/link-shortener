@@ -7,7 +7,7 @@ import { links } from '../db/schema.js';
 import { notFound } from '../lib/errors.js';
 import { validate } from '../lib/validate.js';
 import { requireUser } from '../middleware/auth.js';
-import { clicksForExport, linkStats } from '../services/analytics.js';
+import { clicksForExport, linkStats, overview } from '../services/analytics.js';
 import { getOwnLink } from '../services/links.js';
 import type { AppEnv } from '../types.js';
 
@@ -16,6 +16,13 @@ const query = z.object({
   days: z.coerce.number().int().min(1).max(365).default(30),
   bots: z.enum(['include', 'exclude']).default('exclude'),
 });
+
+export function overviewRoutes({ db }: AppDeps) {
+  const r = new Hono<AppEnv>();
+  r.use('*', requireUser(db, { allowApiKey: true }));
+  r.get('/', (c) => c.json(overview(db, c.get('user').id)));
+  return r;
+}
 
 export function statsRoutes({ db }: AppDeps) {
   const r = new Hono<AppEnv>();

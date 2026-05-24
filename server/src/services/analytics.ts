@@ -1,7 +1,7 @@
-import { and, count, desc, eq, gte, sql, type SQL } from 'drizzle-orm';
+import { and, count, desc, eq, gte, lt, sql, type SQL } from 'drizzle-orm';
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { Db } from '../db/client.js';
-import { clicks } from '../db/schema.js';
+import { clicks, links } from '../db/schema.js';
 import { addDays, isoDay, startOfUtcDay, windowStart } from '../lib/dates.js';
 
 export interface StatsOptions {
@@ -40,6 +40,38 @@ function breakdown(
     .limit(BREAKDOWN_LIMIT)
     .all()
     .map((row) => ({ name: (row.name as string | null) ?? fallback, clicks: row.n }));
+}
+
+/** Totals for the signed in user's dashboard: this week vs the week before. */
+export function overview(db: Db, userId: number, now = new Date()) {
+  const weekStart = windowStart(now, 7);
+  const prevStart = addDays(weekStart, -7);
+  const human = and(eq(links.userId, userId), eq(clicks.isBot, false));
+  const clicksSince = (from: Date, to?: Date) =>
+    db
+      .select({ n: count() })
+      .from(clicks)
+      .innerJoin(links, eq(clicks.linkId, links.id))
+      .where(and(human, gte(clicks.createdAt, from), to ? lt(clicks.createdAt, to) : undefined))
+      .get()?.n ?? 0;
+
+  const n = count();
+  const top = db
+    .select({ id: links.id, slug: links.slug, title: links.title, clicks: n })
+    .from(clicks)
+    .innerJoin(links, eq(clicks.linkId, links.id))
+    .where(and(human, gte(clicks.createdAt, weekStart)))
+    .groupBy(links.id)
+    .orderBy(desc(n))
+    .limit(5)
+    .all();
+
+  return {
+    links: db.select({ n: count() }).from(links).where(eq(links.userId, userId)).get()?.n ?? 0,
+    clicksThisWeek: clicksSince(weekStart),
+    clicksLastWeek: clicksSince(prevStart, weekStart),
+    topLinks: top,
+  };
 }
 
 const EXPORT_LIMIT = 100_000;

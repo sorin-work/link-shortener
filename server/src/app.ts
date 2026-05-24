@@ -10,7 +10,7 @@ import { authRoutes } from './routes/auth.js';
 import { linkRoutes } from './routes/links.js';
 import { qrRoutes } from './routes/qr.js';
 import { redirectRoutes } from './routes/redirect.js';
-import { statsRoutes } from './routes/stats.js';
+import { overviewRoutes, statsRoutes } from './routes/stats.js';
 import { mountWeb } from './static.js';
 
 export interface AppDeps {
@@ -48,6 +48,7 @@ export function createApp(deps: AppDeps) {
   app.route('/api/links', linkRoutes(deps));
   app.route('/api/links', statsRoutes(deps));
   app.route('/api/links', qrRoutes(deps));
+  app.route('/api/overview', overviewRoutes(deps));
 
   mountWeb(app, deps.config.webDir);
 
