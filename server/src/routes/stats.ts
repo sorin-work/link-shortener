@@ -1,10 +1,7 @@
-import { eq } from 'drizzle-orm';
 import { toCsv } from '../lib/csv.js';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
-import { links } from '../db/schema.js';
-import { notFound } from '../lib/errors.js';
 import { validate } from '../lib/validate.js';
 import { requireUser } from '../middleware/auth.js';
 import { clicksForExport, linkStats, overview } from '../services/analytics.js';
@@ -29,9 +26,7 @@ export function statsRoutes({ db }: AppDeps) {
   r.use('*', requireUser(db, { allowApiKey: true }));
 
   r.get('/:id/stats', validate('param', params), validate('query', query), (c) => {
-    const { id } = c.req.valid('param');
-    const link = db.select().from(links).where(eq(links.id, id)).get();
-    if (!link) throw notFound('Link not found');
+    const link = getOwnLink(db, c.get('user').id, c.req.valid('param').id);
     const { days, bots } = c.req.valid('query');
     return c.json(linkStats(db, link.id, { days, includeBots: bots === 'include' }));
   });

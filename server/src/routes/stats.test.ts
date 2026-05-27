@@ -125,6 +125,13 @@ describe('GET /api/links/:id/stats', () => {
     expect(res.status).toBe(400);
   });
 
+  it("does not show other users' stats", async () => {
+    const { app, link } = await linkWithClicks();
+    const other = await registerUser(app);
+    const res = await call(app, 'GET', `/api/links/${link.id}/stats`, { cookie: other });
+    expect(res.status).toBe(404);
+  });
+
   it('404s for unknown links and needs a session', async () => {
     const { app, cookie, link } = await linkWithClicks();
     expect((await call(app, 'GET', '/api/links/999/stats', { cookie })).status).toBe(404);
