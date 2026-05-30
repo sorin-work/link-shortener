@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ne, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
 import type { Config } from '../config.js';
 import type { Db } from '../db/client.js';
 import { links, type Link } from '../db/schema.js';
@@ -51,16 +51,29 @@ export function getOwnLink(db: Db, userId: number, id: number): Link {
   return link;
 }
 
+export const LINK_SORTS = ['newest', 'oldest', 'clicks', 'slug'] as const;
+export type LinkSort = (typeof LINK_SORTS)[number];
+
 export interface ListOptions {
   page: number;
   limit: number;
   q?: string;
+  sort?: LinkSort;
 }
+
+const humanClicks = sql`(select count(*) from clicks where clicks.link_id = ${links.id} and clicks.is_bot = 0)`;
+
+const ORDER: Record<LinkSort, SQL[]> = {
+  newest: [desc(links.createdAt), desc(links.id)],
+  oldest: [asc(links.createdAt), asc(links.id)],
+  clicks: [sql`${humanClicks} desc`, desc(links.id)],
+  slug: [asc(links.slug)],
+};
 
 const likeEscape = (value: string) => value.replace(/[\\%_]/g, (ch) => `\\${ch}`);
 
 export function listLinks(db: Db, config: Config, userId: number, opts: ListOptions) {
-  const { page, limit, q } = opts;
+  const { page, limit, q, sort = 'newest' } = opts;
   const owner = eq(links.userId, userId);
   let where = owner;
   if (q) {
@@ -74,7 +87,7 @@ export function listLinks(db: Db, config: Config, userId: number, opts: ListOpti
     .select()
     .from(links)
     .where(where)
-    .orderBy(desc(links.createdAt), desc(links.id))
+    .orderBy(...ORDER[sort])
     .limit(limit)
     .offset((page - 1) * limit)
     .all();

@@ -11,7 +11,14 @@ import { normalizeDestination } from '../lib/url.js';
 import { validate } from '../lib/validate.js';
 import { requireUser } from '../middleware/auth.js';
 import { countClicks } from '../services/clicks.js';
-import { getOwnLink, listLinks, serializeLink, slugTaken, uniqueSlug } from '../services/links.js';
+import {
+  getOwnLink,
+  LINK_SORTS,
+  listLinks,
+  serializeLink,
+  slugTaken,
+  uniqueSlug,
+} from '../services/links.js';
 import type { AppEnv } from '../types.js';
 
 const idParam = z.object({ id: z.coerce.number().int().positive() });
@@ -20,6 +27,7 @@ const listQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   q: z.string().trim().max(200).optional(),
+  sort: z.enum(LINK_SORTS).default('newest'),
 });
 
 const createSchema = z.object({
