@@ -65,7 +65,7 @@ export const api = {
     request<{ user: User }>('POST', '/auth/register', input),
   logout: () => request<void>('POST', '/auth/logout'),
 
-  listLinks: (params: { page?: number; q?: string; limit?: number }) =>
+  listLinks: (params: { page?: number; q?: string; limit?: number; sort?: string }) =>
     request<LinkPage>('GET', `/links${toQuery(params)}`),
   getLink: (id: number) => request<{ link: Link }>('GET', `/links/${id}`),
   createLink: (input: LinkInput) => request<{ link: Link }>('POST', '/links', input),
