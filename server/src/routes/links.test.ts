@@ -106,6 +106,27 @@ describe('GET /api/links', () => {
     expect(bySlug.links[0].slug).toBe('summer');
   });
 
+  it('sorts by clicks, slug and age', async () => {
+    const { app, cookie, create } = await withUser();
+    await create({ url: 'https://a.example', slug: 'charlie' });
+    await create({ url: 'https://b.example', slug: 'alpha' });
+    await create({ url: 'https://c.example', slug: 'bravo' });
+    const visit = (slug: string) =>
+      call(app, 'GET', `/${slug}`, { headers: { 'user-agent': BROWSER_UA } });
+    for (let i = 0; i < 3; i++) await visit('bravo');
+    await visit('charlie');
+    const slugs = async (sort: string) =>
+      (await readJson(await call(app, 'GET', `/api/links?sort=${sort}`, { cookie }))).links.map(
+        (l: { slug: string }) => l.slug,
+      );
+    expect(await slugs('clicks')).toEqual(['bravo', 'charlie', 'alpha']);
+    expect(await slugs('slug')).toEqual(['alpha', 'bravo', 'charlie']);
+    expect(await slugs('oldest')).toEqual(['charlie', 'alpha', 'bravo']);
+    expect(await slugs('newest')).toEqual(['bravo', 'alpha', 'charlie']);
+    const bad = await call(app, 'GET', '/api/links?sort=random', { cookie });
+    expect(bad.status).toBe(400);
+  });
+
   it('treats % and _ in searches literally', async () => {
     const { app, cookie, create } = await withUser();
     await create({ url: 'https://a.example', title: '100% off' });
