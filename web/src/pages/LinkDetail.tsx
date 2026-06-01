@@ -7,6 +7,7 @@ import { EditLinkForm } from '../components/EditLinkForm';
 import { QrPanel } from '../components/QrPanel';
 import { StatusBadges } from '../components/StatusBadge';
 import { formatDate, formatNumber } from '../format';
+import { useTitle } from '../hooks';
 import { Link as RouterLink, navigate } from '../router';
 import type { Link, LinkStats } from '../types';
 
@@ -14,6 +15,7 @@ export function LinkDetailPage({ id }: { id: number }) {
   const [link, setLink] = useState<Link | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  useTitle(link ? link.title || `/${link.slug}` : null);
   const [stats, setStats] = useState<LinkStats | null>(null);
   const [days, setDays] = useState(30);
   const [includeBots, setIncludeBots] = useState(false);

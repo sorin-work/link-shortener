@@ -3,6 +3,7 @@ import { api, errorMessage } from '../api';
 import { CopyButton } from '../components/CopyButton';
 import { EmptyState } from '../components/EmptyState';
 import { formatDate, timeAgo } from '../format';
+import { useTitle } from '../hooks';
 import type { ApiKey } from '../types';
 
 export function ApiKeysPage() {
@@ -11,6 +12,7 @@ export function ApiKeysPage() {
   const [newToken, setNewToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  useTitle('API keys');
 
   const load = () =>
     api

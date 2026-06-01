@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { api, errorMessage } from '../api';
 import { useAuth } from '../auth';
+import { useTitle } from '../hooks';
 import { Link, navigate } from '../router';
 
 export function LoginPage() {
@@ -9,6 +10,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  useTitle('Sign in');
 
   async function submit(e: Event) {
     e.preventDefault();

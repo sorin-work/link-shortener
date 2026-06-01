@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { api, ApiError, errorMessage } from '../api';
 import { useAuth } from '../auth';
+import { useTitle } from '../hooks';
 import { Link, navigate } from '../router';
 
 export function RegisterPage() {
@@ -8,6 +9,7 @@ export function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState<ApiError | string | null>(null);
   const [busy, setBusy] = useState(false);
+  useTitle('Create an account');
 
   const set = (key: keyof typeof form) => (e: Event) =>
     setForm({ ...form, [key]: (e.currentTarget as HTMLInputElement).value });

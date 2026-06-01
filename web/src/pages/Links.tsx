@@ -7,6 +7,7 @@ import { Pagination } from '../components/Pagination';
 import { Summary } from '../components/Summary';
 import { StatusBadges } from '../components/StatusBadge';
 import { displayUrl, formatNumber, timeAgo } from '../format';
+import { useTitle } from '../hooks';
 import { navigate, useLocation } from '../router';
 import type { LinkPage } from '../types';
 
@@ -19,6 +20,7 @@ export function LinksPage() {
   const [data, setData] = useState<LinkPage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  useTitle('Links');
 
   useEffect(() => {
     let cancelled = false;
