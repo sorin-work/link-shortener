@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, eq, gt, ne } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { sessions, users, type User } from '../db/schema.js';
 
@@ -24,6 +24,13 @@ export function findSessionUser(db: Db, token: string): User | null {
     .where(and(eq(sessions.id, hashToken(token)), gt(sessions.expiresAt, new Date())))
     .get();
   return row?.user ?? null;
+}
+
+/** Signs the user out everywhere except the session making the request. */
+export function deleteOtherSessions(db: Db, userId: number, keepToken: string) {
+  db.delete(sessions)
+    .where(and(eq(sessions.userId, userId), ne(sessions.id, hashToken(keepToken))))
+    .run();
 }
 
 export function deleteSession(db: Db, token: string) {

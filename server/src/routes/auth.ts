@@ -5,11 +5,16 @@ import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { users, type User } from '../db/schema.js';
 import { requireUser } from '../middleware/auth.js';
-import { conflict, HttpError, unauthorized } from '../lib/errors.js';
+import { badRequest, conflict, HttpError, unauthorized } from '../lib/errors.js';
 import { clientIp } from '../lib/clientIp.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { createRateLimiter } from '../lib/rateLimit.js';
-import { createSession, deleteSession, SESSION_COOKIE } from '../lib/sessions.js';
+import {
+  createSession,
+  deleteOtherSessions,
+  deleteSession,
+  SESSION_COOKIE,
+} from '../lib/sessions.js';
 import { validate } from '../lib/validate.js';
 import type { AppEnv } from '../types.js';
 
@@ -24,6 +29,15 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   email,
   password: z.string().min(1, 'Password is required').max(200),
+});
+
+const profileSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(80),
+});
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, 'Enter your current password').max(200),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters').max(200),
 });
 
 // Verified against when the email is unknown so both paths take about as long.
@@ -102,6 +116,32 @@ export function authRoutes({ db, config }: AppDeps) {
   });
 
   r.get('/me', requireUser(db), (c) => c.json({ user: publicUser(c.get('user')) }));
+
+  r.patch('/me', requireUser(db), validate('json', profileSchema), (c) => {
+    const user = db
+      .update(users)
+      .set({ name: c.req.valid('json').name })
+      .where(eq(users.id, c.get('user').id))
+      .returning()
+      .get();
+    return c.json({ user: publicUser(user) });
+  });
+
+  r.post('/password', requireUser(db), validate('json', passwordSchema), async (c) => {
+    const { currentPassword, newPassword } = c.req.valid('json');
+    const user = c.get('user');
+    if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+      throw badRequest('Current password is incorrect', [
+        { path: 'currentPassword', message: 'Current password is incorrect' },
+      ]);
+    }
+    db.update(users)
+      .set({ passwordHash: await hashPassword(newPassword) })
+      .where(eq(users.id, user.id))
+      .run();
+    deleteOtherSessions(db, user.id, getCookie(c, SESSION_COOKIE)!);
+    return c.body(null, 204);
+  });
 
   return r;
 }
