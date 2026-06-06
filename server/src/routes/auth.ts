@@ -35,6 +35,8 @@ const profileSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(80),
 });
 
+const deleteSchema = z.object({ password: z.string().min(1).max(200) });
+
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Enter your current password').max(200),
   newPassword: z.string().min(8, 'Password must be at least 8 characters').max(200),
@@ -140,6 +142,19 @@ export function authRoutes({ db, config }: AppDeps) {
       .where(eq(users.id, user.id))
       .run();
     deleteOtherSessions(db, user.id, getCookie(c, SESSION_COOKIE)!);
+    return c.body(null, 204);
+  });
+
+  // Links, clicks, sessions and api keys go with the user (on delete cascade).
+  r.delete('/me', requireUser(db), validate('json', deleteSchema), async (c) => {
+    const user = c.get('user');
+    if (!(await verifyPassword(c.req.valid('json').password, user.passwordHash))) {
+      throw badRequest('Password is incorrect', [
+        { path: 'password', message: 'Password is incorrect' },
+      ]);
+    }
+    db.delete(users).where(eq(users.id, user.id)).run();
+    deleteCookie(c, SESSION_COOKIE, { path: '/' });
     return c.body(null, 204);
   });
 
