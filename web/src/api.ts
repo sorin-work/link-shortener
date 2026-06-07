@@ -64,6 +64,10 @@ export const api = {
   register: (input: { email: string; name: string; password: string }) =>
     request<{ user: User }>('POST', '/auth/register', input),
   logout: () => request<void>('POST', '/auth/logout'),
+  updateProfile: (name: string) => request<{ user: User }>('PATCH', '/auth/me', { name }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<void>('POST', '/auth/password', { currentPassword, newPassword }),
+  deleteAccount: (password: string) => request<void>('DELETE', '/auth/me', { password }),
 
   listLinks: (params: { page?: number; q?: string; limit?: number; sort?: string }) =>
     request<LinkPage>('GET', `/links${toQuery(params)}`),

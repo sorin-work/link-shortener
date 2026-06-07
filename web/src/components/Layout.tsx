@@ -5,6 +5,7 @@ import { Link, useLocation } from '../router';
 const NAV = [
   { href: '/', label: 'Links' },
   { href: '/keys', label: 'API keys' },
+  { href: '/settings', label: 'Settings' },
 ];
 
 export function Layout({ children }: { children: ComponentChildren }) {

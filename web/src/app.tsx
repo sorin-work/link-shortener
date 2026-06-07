@@ -5,11 +5,13 @@ import { LinkDetailPage } from './pages/LinkDetail';
 import { LinksPage } from './pages/Links';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
+import { SettingsPage } from './pages/Settings';
 import { matchPath, useLocation } from './router';
 
 function Page({ path }: { path: string }) {
   if (path === '/' || path === '/login' || path === '/register') return <LinksPage />;
   if (path === '/keys') return <ApiKeysPage />;
+  if (path === '/settings') return <SettingsPage />;
   const detail = matchPath('/links/:id', path);
   if (detail && Number(detail.id) > 0) return <LinkDetailPage id={Number(detail.id)} />;
   return (
