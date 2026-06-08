@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, isoDay, startOfUtcDay, windowStart } from './dates.js';
+import { addDays, isoDay, parseExpiry, startOfUtcDay, windowStart } from './dates.js';
 
 describe('date helpers', () => {
   it('finds the start of the utc day', () => {
@@ -17,6 +17,12 @@ describe('date helpers', () => {
     const now = new Date('2026-04-10T15:00:00Z');
     expect(windowStart(now, 1).toISOString()).toBe('2026-04-10T00:00:00.000Z');
     expect(windowStart(now, 7).toISOString()).toBe('2026-04-04T00:00:00.000Z');
+  });
+
+  it('reads a plain date as the end of that day', () => {
+    expect(parseExpiry('2026-05-31')?.toISOString()).toBe('2026-05-31T23:59:59.999Z');
+    expect(parseExpiry('2026-05-31T08:00:00Z')?.toISOString()).toBe('2026-05-31T08:00:00.000Z');
+    expect(parseExpiry('soon')).toBeNull();
   });
 
   it('formats utc days regardless of the local timezone', () => {

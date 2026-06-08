@@ -23,7 +23,8 @@ const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 export function parseExpiry(value: string): Date | null {
   const trimmed = value.trim();
   if (!DATE_ONLY.test(trimmed) && Number.isNaN(Date.parse(trimmed))) return null;
-  const date = new Date(trimmed);
+  // A date from a date picker means "until the end of that day".
+  const date = new Date(DATE_ONLY.test(trimmed) ? `${trimmed}T23:59:59.999Z` : trimmed);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 

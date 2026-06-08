@@ -31,6 +31,20 @@ describe('link expiry', () => {
     expect((await readJson(res)).link.expiresAt).toMatch(/^2099-12-31/);
   });
 
+  it('keeps a date-only expiry working until the end of that day', async () => {
+    const { app, cookie } = await ctx();
+    const today = new Date().toISOString().slice(0, 10);
+    const res = await call(app, 'POST', '/api/links', {
+      cookie,
+      json: { url: 'https://example.com', slug: 'today-only', expiresAt: today },
+    });
+    expect(res.status).toBe(201);
+    const { link } = await readJson(res);
+    expect(link.expiresAt).toBe(`${today}T23:59:59.999Z`);
+    expect(link.expired).toBe(false);
+    expect((await call(app, 'GET', '/today-only')).status).toBe(302);
+  });
+
   it('rejects past and invalid dates', async () => {
     const { app, cookie } = await ctx();
     for (const expiresAt of ['2020-01-01', 'next tuesday']) {
