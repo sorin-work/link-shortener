@@ -7,6 +7,7 @@ import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { SettingsPage } from './pages/Settings';
 import { matchPath, useLocation } from './router';
+import { ToastProvider } from './toast';
 
 function Page({ path }: { path: string }) {
   if (path === '/' || path === '/login' || path === '/register') return <LinksPage />;
@@ -38,7 +39,9 @@ function Routes() {
 export function App() {
   return (
     <AuthProvider>
-      <Routes />
+      <ToastProvider>
+        <Routes />
+      </ToastProvider>
     </AuthProvider>
   );
 }
