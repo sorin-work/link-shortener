@@ -10,7 +10,7 @@ export type Availability = 'active' | 'expired' | 'limit_reached';
 
 export function availability(link: Link, now = new Date()): Availability {
   if (link.expiresAt && link.expiresAt <= now) return 'expired';
-  if (link.maxClicks !== null && link.clickCount > link.maxClicks) return 'limit_reached';
+  if (link.maxClicks !== null && link.clickCount >= link.maxClicks) return 'limit_reached';
   return 'active';
 }
 

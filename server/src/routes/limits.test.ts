@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 import { links } from '../db/schema.js';
-import { call, createLink, readJson, registerUser, setup } from '../test/helpers.js';
+import { BROWSER_UA, call, createLink, readJson, registerUser, setup } from '../test/helpers.js';
 
 async function limitedLink(maxClicks: number) {
   const ctx = setup();
@@ -29,6 +29,16 @@ describe('click limits', () => {
     const res = await call(app, 'GET', '/limited');
     expect(res.status).toBe(410);
     expect(await res.text()).toContain('click limit');
+  });
+
+  it('allows exactly maxClicks redirects', async () => {
+    const { app, cookie, link } = await limitedLink(2);
+    const visit = () => call(app, 'GET', '/limited', { headers: { 'user-agent': BROWSER_UA } });
+    expect((await visit()).status).toBe(302);
+    expect((await visit()).status).toBe(302);
+    expect((await visit()).status).toBe(410);
+    const body = await readJson(await call(app, 'GET', `/api/links/${link.id}`, { cookie }));
+    expect(body.link).toMatchObject({ clickCount: 2, status: 'limit_reached' });
   });
 
   it('can raise or remove the limit', async () => {
