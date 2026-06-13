@@ -1,4 +1,6 @@
 import type { ComponentChildren } from 'preact';
+import { useState } from 'preact/hooks';
+import { applyTheme, storedTheme, type Theme } from '../theme';
 import { useAuth } from '../auth';
 import { Link, useLocation } from '../router';
 
@@ -11,6 +13,7 @@ const NAV = [
 export function Layout({ children }: { children: ComponentChildren }) {
   const { user, signOut } = useAuth();
   const { path } = useLocation();
+  const [theme, setTheme] = useState<Theme>(storedTheme);
 
   return (
     <div class="shell">
@@ -36,6 +39,19 @@ export function Layout({ children }: { children: ComponentChildren }) {
           ))}
         </nav>
         <div class="account">
+          <select
+            aria-label="Theme"
+            value={theme}
+            onChange={(e) => {
+              const next = e.currentTarget.value as Theme;
+              setTheme(next);
+              applyTheme(next);
+            }}
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
           <span class="muted">{user?.name}</span>
           <button type="button" class="ghost" onClick={() => void signOut()}>
             Sign out

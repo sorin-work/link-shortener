@@ -17,6 +17,32 @@
   background: var(--bg);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #14161b;
+    --surface: #1d2027;
+    --text: #e6e8ee;
+    --muted: #9aa1b2;
+    --border: #2e323c;
+    --accent: #7c95ff;
+    --accent-contrast: #10131a;
+    --danger: #ff6b6b;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #14161b;
+  --surface: #1d2027;
+  --text: #e6e8ee;
+  --muted: #9aa1b2;
+  --border: #2e323c;
+  --accent: #7c95ff;
+  --accent-contrast: #10131a;
+  --danger: #ff6b6b;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -111,7 +137,7 @@ button:disabled {
   margin: 0;
   padding: 0.6rem 0.8rem;
   border-radius: 6px;
-  background: #fff0f0;
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
   color: var(--danger);
 }
 
