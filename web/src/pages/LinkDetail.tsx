@@ -8,6 +8,7 @@ import { QrPanel } from '../components/QrPanel';
 import { StatusBadges } from '../components/StatusBadge';
 import { formatDate, formatNumber } from '../format';
 import { useTitle } from '../hooks';
+import { useToast } from '../toast';
 import { Link as RouterLink, navigate } from '../router';
 import type { Link, LinkStats } from '../types';
 
@@ -16,6 +17,7 @@ export function LinkDetailPage({ id }: { id: number }) {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   useTitle(link ? link.title || `/${link.slug}` : null);
+  const notify = useToast();
   const [stats, setStats] = useState<LinkStats | null>(null);
   const [days, setDays] = useState(30);
   const [includeBots, setIncludeBots] = useState(false);
@@ -40,9 +42,10 @@ export function LinkDetailPage({ id }: { id: number }) {
     if (!link || !window.confirm(`Delete /${link.slug}? Its click history goes with it.`)) return;
     try {
       await api.deleteLink(link.id);
+      notify(`Deleted /${link.slug}`);
       navigate('/', { replace: true });
     } catch (err) {
-      setError(errorMessage(err));
+      notify(errorMessage(err), 'error');
     }
   }
 
@@ -93,6 +96,7 @@ export function LinkDetailPage({ id }: { id: number }) {
           onSaved={(updated) => {
             setLink(updated);
             setEditing(false);
+            notify('Changes saved');
           }}
         />
       )}

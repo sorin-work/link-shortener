@@ -4,6 +4,7 @@ import { CopyButton } from '../components/CopyButton';
 import { EmptyState } from '../components/EmptyState';
 import { formatDate, timeAgo } from '../format';
 import { useTitle } from '../hooks';
+import { useToast } from '../toast';
 import type { ApiKey } from '../types';
 
 export function ApiKeysPage() {
@@ -13,6 +14,7 @@ export function ApiKeysPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useTitle('API keys');
+  const notify = useToast();
 
   const load = () =>
     api
@@ -44,9 +46,10 @@ export function ApiKeysPage() {
     if (!window.confirm(`Revoke "${key.name}"? Anything using it will stop working.`)) return;
     try {
       await api.revokeKey(key.id);
+      notify(`Revoked "${key.name}"`);
       await load();
     } catch (err) {
-      setError(errorMessage(err));
+      notify(errorMessage(err), 'error');
     }
   }
 

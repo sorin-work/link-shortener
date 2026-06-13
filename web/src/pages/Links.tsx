@@ -8,6 +8,7 @@ import { Summary } from '../components/Summary';
 import { StatusBadges } from '../components/StatusBadge';
 import { displayUrl, formatNumber, timeAgo } from '../format';
 import { useTitle } from '../hooks';
+import { useToast } from '../toast';
 import { navigate, useLocation } from '../router';
 import type { LinkPage } from '../types';
 
@@ -21,6 +22,7 @@ export function LinksPage() {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   useTitle('Links');
+  const notify = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -48,7 +50,12 @@ export function LinksPage() {
     <section class="stack">
       <h1>Links</h1>
       <Summary version={version} />
-      <CreateLinkForm onCreated={() => setVersion((v) => v + 1)} />
+      <CreateLinkForm
+        onCreated={(link) => {
+          notify(`Created /${link.slug}`);
+          setVersion((v) => v + 1);
+        }}
+      />
       <form
         class="search"
         role="search"
