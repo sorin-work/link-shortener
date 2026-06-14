@@ -10,6 +10,16 @@ const STYLE = `
   .error { color: #c92a2a; margin-top: .75rem; }
 `;
 
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+export const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch]!);
+
 export function page(title: string, body: string): string {
   return `<!doctype html>
 <html lang="en">
@@ -30,10 +40,10 @@ export const gonePage = (reason: string) =>
 export const unlockPage = (link: { slug: string; title: string | null }, error?: string) =>
   page(
     'Protected link',
-    `<h1>${link.title || 'Protected link'}</h1>
+    `<h1>${escapeHtml(link.title || 'Protected link')}</h1>
 <p>This link is password protected.</p>
 ${error ? `<p class="error">${error}</p>` : ''}
-<form method="post" action="/${link.slug}">
+<form method="post" action="/${encodeURIComponent(link.slug)}">
   <input type="password" name="password" placeholder="Password" aria-label="Password" required autofocus>
   <button type="submit">Continue</button>
 </form>`,

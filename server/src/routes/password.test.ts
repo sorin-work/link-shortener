@@ -37,6 +37,20 @@ describe('password-protected links', () => {
     expect(db.select().from(clicks).all()).toHaveLength(0);
   });
 
+  it('escapes the title on the unlock page', async () => {
+    const { app } = setup();
+    const cookie = await registerUser(app);
+    await createLink(app, cookie, {
+      url: 'https://example.com',
+      slug: 'xss',
+      title: '<script>alert(document.cookie)</script>',
+      password: 'open-sesame',
+    });
+    const html = await (await call(app, 'GET', '/xss')).text();
+    expect(html).not.toContain('<script>alert');
+    expect(html).toContain('&lt;script&gt;');
+  });
+
   it('redirects and counts the click with the right password', async () => {
     const { app, db } = await protectedLink();
     const res = await app.request('/secret', { method: 'POST', ...form('open-sesame') });
