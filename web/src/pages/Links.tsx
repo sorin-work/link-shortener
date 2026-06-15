@@ -97,7 +97,7 @@ export function LinksPage() {
               <th>Short link</th>
               <th>Destination</th>
               <th class="num">Clicks</th>
-              <th>Created</th>
+              <th class="hide-sm">Created</th>
             </tr>
           </thead>
           <tbody>
@@ -115,7 +115,7 @@ export function LinksPage() {
                   <div class="muted truncate">{displayUrl(link.url)}</div>
                 </td>
                 <td class="num">{formatNumber(link.clicks)}</td>
-                <td class="muted" title={link.createdAt}>
+                <td class="muted hide-sm" title={link.createdAt}>
                   {timeAgo(link.createdAt)}
                 </td>
               </tr>
