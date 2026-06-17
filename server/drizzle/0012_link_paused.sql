@@ -1,0 +1,1 @@
+ALTER TABLE `links` ADD `paused` integer DEFAULT false NOT NULL;

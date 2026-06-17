@@ -38,6 +38,7 @@ export const links = sqliteTable(
     /** Clicks that count towards max_clicks. */
     clickCount: integer('click_count').notNull().default(0),
     passwordHash: text('password_hash'),
+    paused: integer('paused', { mode: 'boolean' }).notNull().default(false),
     createdAt: createdAt(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
       .notNull()
