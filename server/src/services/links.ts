@@ -6,9 +6,10 @@ import { conflict, notFound } from '../lib/errors.js';
 import { generateSlug } from '../lib/slug.js';
 import { countClicks } from './clicks.js';
 
-export type Availability = 'active' | 'expired' | 'limit_reached';
+export type Availability = 'active' | 'paused' | 'expired' | 'limit_reached';
 
 export function availability(link: Link, now = new Date()): Availability {
+  if (link.paused) return 'paused';
   if (link.expiresAt && link.expiresAt <= now) return 'expired';
   if (link.maxClicks !== null && link.clickCount >= link.maxClicks) return 'limit_reached';
   return 'active';

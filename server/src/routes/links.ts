@@ -45,6 +45,7 @@ const updateSchema = z.object({
   title: z.string().trim().max(200).nullable().optional(),
   expiresAt: z.string().max(40).nullable().optional(),
   maxClicks: z.number().int().min(1).max(10_000_000).nullable().optional(),
+  paused: z.boolean().optional(),
   /** a new password, or null to remove protection */
   password: z
     .string()
@@ -128,6 +129,7 @@ export function linkRoutes({ db, config }: AppDeps) {
     if (input.title !== undefined) changes.title = input.title || null;
     if (input.expiresAt !== undefined) changes.expiresAt = expiryOrThrow(input.expiresAt);
     if (input.maxClicks !== undefined) changes.maxClicks = input.maxClicks;
+    if (input.paused !== undefined) changes.paused = input.paused;
     if (input.password !== undefined) {
       changes.passwordHash = input.password ? await hashPassword(input.password) : null;
     }

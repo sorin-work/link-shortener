@@ -10,6 +10,7 @@ import { recordClick } from '../services/clicks.js';
 import { availability } from '../services/links.js';
 
 const UNAVAILABLE: Record<string, string> = {
+  paused: 'This link is paused by its owner.',
   expired: 'This link has expired.',
   limit_reached: 'This link has reached its click limit.',
 };
