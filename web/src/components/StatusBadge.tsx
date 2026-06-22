@@ -10,6 +10,7 @@ export function StatusBadges({ link }: { link: Link }) {
 }
 
 export function StatusBadge({ link }: { link: Link }) {
+  if (link.status === 'paused') return <span class="badge badge-muted">Paused</span>;
   if (link.expired) return <span class="badge badge-muted">Expired</span>;
   if (link.status === 'limit_reached') return <span class="badge badge-muted">Limit reached</span>;
   if (link.maxClicks !== null) {

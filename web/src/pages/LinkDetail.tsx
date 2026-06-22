@@ -38,6 +38,18 @@ export function LinkDetailPage({ id }: { id: number }) {
       .catch((err) => setError(errorMessage(err)));
   }, [id]);
 
+  async function togglePaused() {
+    if (!link) return;
+    const paused = link.status !== 'paused';
+    try {
+      const res = await api.updateLink(link.id, { paused });
+      setLink(res.link);
+      notify(paused ? 'Link paused' : 'Link resumed');
+    } catch (err) {
+      notify(errorMessage(err), 'error');
+    }
+  }
+
   async function remove() {
     if (!link || !window.confirm(`Delete /${link.slug}? Its click history goes with it.`)) return;
     try {
@@ -80,6 +92,9 @@ export function LinkDetailPage({ id }: { id: number }) {
           <a class="button" href={`/api/links/${link.id}/clicks.csv?days=${days}`} download>
             Export CSV
           </a>
+          <button type="button" onClick={togglePaused}>
+            {link.status === 'paused' ? 'Resume' : 'Pause'}
+          </button>
           <button type="button" onClick={() => setEditing(true)} disabled={editing}>
             Edit
           </button>
