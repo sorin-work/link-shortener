@@ -17,8 +17,8 @@ async function limitedLink(maxClicks: number) {
 describe('click limits', () => {
   it('counts redirects towards the limit', async () => {
     const { app, cookie, link } = await limitedLink(10);
-    await call(app, 'GET', '/limited');
-    await call(app, 'GET', '/limited');
+    await call(app, 'GET', '/limited', { headers: { 'user-agent': BROWSER_UA } });
+    await call(app, 'GET', '/limited', { headers: { 'user-agent': BROWSER_UA } });
     const body = await readJson(await call(app, 'GET', `/api/links/${link.id}`, { cookie }));
     expect(body.link).toMatchObject({ maxClicks: 10, clickCount: 2, status: 'active' });
   });
@@ -39,6 +39,17 @@ describe('click limits', () => {
     expect((await visit()).status).toBe(410);
     const body = await readJson(await call(app, 'GET', `/api/links/${link.id}`, { cookie }));
     expect(body.link).toMatchObject({ clickCount: 2, status: 'limit_reached' });
+  });
+
+  it('does not spend clicks on link previews', async () => {
+    const { app } = await limitedLink(1);
+    const preview = await call(app, 'GET', '/limited', {
+      headers: { 'user-agent': 'Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)' },
+    });
+    expect(preview.status).toBe(302);
+    const human = { headers: { 'user-agent': BROWSER_UA } };
+    expect((await call(app, 'GET', '/limited', human)).status).toBe(302);
+    expect((await call(app, 'GET', '/limited', human)).status).toBe(410);
   });
 
   it('can raise or remove the limit', async () => {

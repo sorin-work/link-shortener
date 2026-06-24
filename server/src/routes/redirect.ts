@@ -2,6 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { Hono, type Context } from 'hono';
 import type { AppDeps } from '../app.js';
 import { links, type Link } from '../db/schema.js';
+import { isBot } from '../lib/bots.js';
 import { clientIp } from '../lib/clientIp.js';
 import { verifyPassword } from '../lib/password.js';
 import { createRateLimiter } from '../lib/rateLimit.js';
@@ -29,15 +30,19 @@ export function redirectRoutes({ db, config }: AppDeps) {
   };
 
   const follow = (c: Context, link: Link) => {
+    const userAgent = c.req.header('user-agent');
     recordClick(db, link, {
       referrer: c.req.header('referer'),
-      userAgent: c.req.header('user-agent'),
+      userAgent,
       country: c.req.header(config.countryHeader),
     });
-    db.update(links)
-      .set({ clickCount: sql`${links.clickCount} + 1` })
-      .where(eq(links.id, link.id))
-      .run();
+    // Crawlers and preview bots are recorded, but don't use up a click limit.
+    if (!isBot(userAgent)) {
+      db.update(links)
+        .set({ clickCount: sql`${links.clickCount} + 1` })
+        .where(eq(links.id, link.id))
+        .run();
+    }
 
     // Every hit has to reach us to be counted, so browsers must not cache it.
     c.header('Cache-Control', 'private, no-store');
