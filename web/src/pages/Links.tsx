@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { api, errorMessage, toQuery } from '../api';
 import { CopyButton } from '../components/CopyButton';
 import { CreateLinkForm } from '../components/CreateLinkForm';
@@ -22,6 +22,20 @@ export function LinksPage() {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   useTitle('Links');
+  const searchInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const typing = target?.closest('input, textarea, select, [contenteditable]');
+      if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        searchInput.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   const notify = useToast();
 
   useEffect(() => {
@@ -65,8 +79,9 @@ export function LinksPage() {
         }}
       >
         <input
+          ref={searchInput}
           type="search"
-          placeholder="Search by slug, URL or title"
+          placeholder="Search by slug, URL or title (press /)"
           value={search}
           onInput={(e) => setSearch(e.currentTarget.value)}
         />
