@@ -20,6 +20,24 @@ describe('buildUtmUrl', () => {
     );
   });
 
+  it('merges with an existing query string', () => {
+    expect(buildUtmUrl('https://shop.example/p?id=4', { source: 'nl' })).toBe(
+      'https://shop.example/p?id=4&utm_source=nl',
+    );
+  });
+
+  it('keeps the fragment at the end', () => {
+    expect(buildUtmUrl('https://docs.example/guide#install', { source: 'x', medium: 'y' })).toBe(
+      'https://docs.example/guide?utm_source=x&utm_medium=y#install',
+    );
+  });
+
+  it('replaces utm parameters that are already there', () => {
+    expect(
+      buildUtmUrl('https://a.example/?utm_source=old&ref=1', { source: 'new', campaign: 'c' }),
+    ).toBe('https://a.example/?ref=1&utm_source=new&utm_campaign=c');
+  });
+
   it('returns the url untouched when nothing is set', () => {
     expect(buildUtmUrl('https://a.example/x', {})).toBe('https://a.example/x');
   });

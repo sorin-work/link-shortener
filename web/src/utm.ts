@@ -9,7 +9,17 @@ export function buildUtmUrl(url: string, params: UtmParams): string {
     (field) => `utm_${field}=${encodeURIComponent(params[field]!.trim())}`,
   );
   if (pairs.length === 0) return url;
-  return `${url}?${pairs.join('&')}`;
+
+  const hashAt = url.indexOf('#');
+  const hash = hashAt === -1 ? '' : url.slice(hashAt);
+  const beforeHash = hashAt === -1 ? url : url.slice(0, hashAt);
+  const queryAt = beforeHash.indexOf('?');
+  const path = queryAt === -1 ? beforeHash : beforeHash.slice(0, queryAt);
+  const existing = queryAt === -1 ? [] : beforeHash.slice(queryAt + 1).split('&');
+  const kept = existing.filter(
+    (part) => part && !UTM_FIELDS.some((field) => part.startsWith(`utm_${field}=`)),
+  );
+  return `${path}?${[...kept, ...pairs].join('&')}${hash}`;
 }
 
 /** Reads utm_* parameters already present in a URL. */
