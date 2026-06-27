@@ -112,6 +112,7 @@ export function LinksPage() {
               <th>Short link</th>
               <th>Destination</th>
               <th class="num">Clicks</th>
+              <th class="hide-sm">Last click</th>
               <th class="hide-sm">Created</th>
             </tr>
           </thead>
@@ -130,6 +131,9 @@ export function LinksPage() {
                   <div class="muted truncate">{displayUrl(link.url)}</div>
                 </td>
                 <td class="num">{formatNumber(link.clicks)}</td>
+                <td class="muted hide-sm" title={link.lastClickAt ?? undefined}>
+                  {link.lastClickAt ? timeAgo(link.lastClickAt) : '–'}
+                </td>
                 <td class="muted hide-sm" title={link.createdAt}>
                   {timeAgo(link.createdAt)}
                 </td>

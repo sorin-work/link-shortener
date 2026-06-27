@@ -12,6 +12,7 @@ export interface Link {
   url: string;
   title: string | null;
   clicks: number;
+  lastClickAt: string | null;
   expiresAt: string | null;
   expired: boolean;
   maxClicks: number | null;
