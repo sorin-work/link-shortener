@@ -4,7 +4,7 @@ import type { Db } from '../db/client.js';
 import { links, type Link } from '../db/schema.js';
 import { conflict, notFound } from '../lib/errors.js';
 import { generateSlug } from '../lib/slug.js';
-import { countClicksFor } from './clicks.js';
+import { clickSummaries, type ClickSummary } from './clicks.js';
 
 export type Availability = 'active' | 'paused' | 'expired' | 'limit_reached';
 
@@ -15,14 +15,17 @@ export function availability(link: Link, now = new Date()): Availability {
   return 'active';
 }
 
-export function serializeLink(link: Link, config: Config, clicks = 0) {
+const NO_CLICKS: ClickSummary = { clicks: 0, lastClickAt: null };
+
+export function serializeLink(link: Link, config: Config, summary = NO_CLICKS) {
   return {
     id: link.id,
     slug: link.slug,
     shortUrl: `${config.baseUrl}/${link.slug}`,
     url: link.url,
     title: link.title,
-    clicks,
+    clicks: summary.clicks,
+    lastClickAt: summary.lastClickAt?.toISOString() ?? null,
     expiresAt: link.expiresAt?.toISOString() ?? null,
     expired: !!link.expiresAt && link.expiresAt <= new Date(),
     maxClicks: link.maxClicks,
@@ -93,12 +96,12 @@ export function listLinks(db: Db, config: Config, userId: number, opts: ListOpti
     .offset((page - 1) * limit)
     .all();
 
-  const counts = countClicksFor(
+  const summaries = clickSummaries(
     db,
     rows.map((link) => link.id),
   );
   return {
-    links: rows.map((link) => serializeLink(link, config, counts.get(link.id) ?? 0)),
+    links: rows.map((link) => serializeLink(link, config, summaries.get(link.id))),
     page,
     limit,
     total,

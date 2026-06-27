@@ -1,4 +1,4 @@
-import { and, count, eq, inArray } from 'drizzle-orm';
+import { and, count, eq, inArray, max } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { clicks, type Link } from '../db/schema.js';
 import { isBot } from '../lib/bots.js';
@@ -39,16 +39,26 @@ export function buildClick(linkId: number, info: ClickInfo): typeof clicks.$infe
   };
 }
 
-/** Human click counts for several links, keyed by link id. */
-export function countClicksFor(db: Db, linkIds: number[]): Map<number, number> {
+export interface ClickSummary {
+  clicks: number;
+  lastClickAt: Date | null;
+}
+
+/** Human click counts and the latest click for several links, keyed by link id. */
+export function clickSummaries(db: Db, linkIds: number[]): Map<number, ClickSummary> {
   if (linkIds.length === 0) return new Map();
   const rows = db
-    .select({ linkId: clicks.linkId, n: count() })
+    .select({ linkId: clicks.linkId, n: count(), last: max(clicks.createdAt) })
     .from(clicks)
     .where(and(inArray(clicks.linkId, linkIds), eq(clicks.isBot, false)))
     .groupBy(clicks.linkId)
     .all();
-  return new Map(rows.map((row) => [row.linkId, row.n]));
+  return new Map(
+    rows.map((row) => [
+      row.linkId,
+      { clicks: row.n, lastClickAt: row.last ? new Date(row.last) : null },
+    ]),
+  );
 }
 
 export function recordClick(db: Db, link: Link, info: ClickInfo) {

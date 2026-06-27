@@ -10,7 +10,7 @@ import { checkCustomSlug } from '../lib/slug.js';
 import { normalizeDestination } from '../lib/url.js';
 import { validate } from '../lib/validate.js';
 import { requireUser } from '../middleware/auth.js';
-import { countClicks } from '../services/clicks.js';
+import { clickSummaries } from '../services/clicks.js';
 import {
   getOwnLink,
   LINK_SORTS,
@@ -92,7 +92,8 @@ export function linkRoutes({ db, config }: AppDeps) {
 
   r.get('/:id', validate('param', idParam), (c) => {
     const link = getOwnLink(db, c.get('user').id, c.req.valid('param').id);
-    return c.json({ link: serializeLink(link, config, countClicks(db, link.id)) });
+    const summary = clickSummaries(db, [link.id]).get(link.id);
+    return c.json({ link: serializeLink(link, config, summary) });
   });
 
   r.post('/', validate('json', createSchema), async (c) => {
