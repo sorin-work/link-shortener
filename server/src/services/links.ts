@@ -4,7 +4,7 @@ import type { Db } from '../db/client.js';
 import { links, type Link } from '../db/schema.js';
 import { conflict, notFound } from '../lib/errors.js';
 import { generateSlug } from '../lib/slug.js';
-import { countClicks } from './clicks.js';
+import { countClicksFor } from './clicks.js';
 
 export type Availability = 'active' | 'paused' | 'expired' | 'limit_reached';
 
@@ -93,8 +93,12 @@ export function listLinks(db: Db, config: Config, userId: number, opts: ListOpti
     .offset((page - 1) * limit)
     .all();
 
+  const counts = countClicksFor(
+    db,
+    rows.map((link) => link.id),
+  );
   return {
-    links: rows.map((link) => serializeLink(link, config, countClicks(db, link.id))),
+    links: rows.map((link) => serializeLink(link, config, counts.get(link.id) ?? 0)),
     page,
     limit,
     total,

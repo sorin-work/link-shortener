@@ -1,4 +1,4 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { clicks, type Link } from '../db/schema.js';
 import { isBot } from '../lib/bots.js';
@@ -37,6 +37,18 @@ export function buildClick(linkId: number, info: ClickInfo): typeof clicks.$infe
     country: normalizeCountry(info.country),
     isBot: isBot(info.userAgent),
   };
+}
+
+/** Human click counts for several links, keyed by link id. */
+export function countClicksFor(db: Db, linkIds: number[]): Map<number, number> {
+  if (linkIds.length === 0) return new Map();
+  const rows = db
+    .select({ linkId: clicks.linkId, n: count() })
+    .from(clicks)
+    .where(and(inArray(clicks.linkId, linkIds), eq(clicks.isBot, false)))
+    .groupBy(clicks.linkId)
+    .all();
+  return new Map(rows.map((row) => [row.linkId, row.n]));
 }
 
 export function recordClick(db: Db, link: Link, info: ClickInfo) {
