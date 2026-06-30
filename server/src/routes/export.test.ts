@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { call, createLink, registerUser, setup } from '../test/helpers.js';
+import { BROWSER_UA, call, createLink, registerUser, setup } from '../test/helpers.js';
 
 describe('GET /api/links/:id/clicks.csv', () => {
   it('downloads the clicks of a link', async () => {
@@ -22,6 +22,18 @@ describe('GET /api/links/:id/clicks.csv', () => {
     expect(lines[0]).toBe('time,referrer,referrer_host,country,device,browser,os,bot,user_agent');
     expect(lines).toHaveLength(2);
     expect(lines[1]).toContain(',https://www.google.com/,google.com,DE,');
+  });
+
+  it('keeps real user agents in one column', async () => {
+    const { app } = setup();
+    const cookie = await registerUser(app);
+    const { link } = await createLink(app, cookie, { url: 'https://example.com', slug: 'agent' });
+    await call(app, 'GET', '/agent', { headers: { 'user-agent': BROWSER_UA } });
+    const text = await (
+      await call(app, 'GET', `/api/links/${link.id}/clicks.csv`, { cookie })
+    ).text();
+    const row = text.trim().split('\r\n')[1]!;
+    expect(row.endsWith(`,"${BROWSER_UA}"`)).toBe(true);
   });
 
   it("is not available for other users' links", async () => {
