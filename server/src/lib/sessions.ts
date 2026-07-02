@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { and, eq, gt, ne } from 'drizzle-orm';
+import { and, eq, gt, lte, ne } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { sessions, users, type User } from '../db/schema.js';
 
@@ -31,6 +31,11 @@ export function deleteOtherSessions(db: Db, userId: number, keepToken: string) {
   db.delete(sessions)
     .where(and(eq(sessions.userId, userId), ne(sessions.id, hashToken(keepToken))))
     .run();
+}
+
+/** Removes sessions past their expiry. Returns how many were deleted. */
+export function pruneExpiredSessions(db: Db, now = new Date()): number {
+  return db.delete(sessions).where(lte(sessions.expiresAt, now)).run().changes;
 }
 
 export function deleteSession(db: Db, token: string) {
