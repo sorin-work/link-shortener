@@ -5,7 +5,7 @@ import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema.js';
 
-export type Db = BetterSQLite3Database<typeof schema>;
+export type Db = BetterSQLite3Database<typeof schema> & { $client: Database.Database };
 
 export function openDatabase(file: string, migrationsFolder: string): Db {
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
