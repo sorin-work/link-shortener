@@ -43,6 +43,9 @@ export function createApp(deps: AppDeps) {
     return c.json({ status: 'ok' });
   });
 
+  // Short links are redirects and the dashboard is private: nothing to index.
+  app.get('/robots.txt', (c) => c.text('User-agent: *\nDisallow: /\n'));
+
   app.route('/api/auth', authRoutes(deps));
   app.route('/api/keys', apiKeyRoutes(deps));
   app.route('/api/links', linkRoutes(deps));

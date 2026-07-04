@@ -20,6 +20,15 @@ describe('security headers', () => {
   });
 });
 
+describe('GET /robots.txt', () => {
+  it('disallows crawling', async () => {
+    const { app } = setup();
+    const res = await call(app, 'GET', '/robots.txt');
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe('User-agent: *\nDisallow: /\n');
+  });
+});
+
 describe('unknown routes', () => {
   it('return a json 404', async () => {
     const { app } = setup();
