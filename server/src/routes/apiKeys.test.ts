@@ -64,6 +64,17 @@ describe('api keys', () => {
     expect(list.keys[0].revokedAt).not.toBeNull();
   });
 
+  it('stops accepting a key once it is revoked', async () => {
+    const { app, cookie, key, token } = await withKey();
+    expect((await call(app, 'GET', '/api/links', { headers: bearer(token) })).status).toBe(200);
+    await call(app, 'DELETE', `/api/keys/${key.id}`, { cookie });
+    const res = await call(app, 'POST', '/api/links', {
+      headers: bearer(token),
+      json: { url: 'https://example.com' },
+    });
+    expect(res.status).toBe(401);
+  });
+
   it("can't revoke someone else's key", async () => {
     const { app, key } = await withKey();
     const other = await registerUser(app);

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { getCookie } from 'hono/cookie';
 import { createMiddleware } from 'hono/factory';
 import type { Db } from '../db/client.js';
@@ -13,7 +13,7 @@ function findApiKeyUser(db: Db, token: string): User | null {
     .select({ user: users, keyId: apiKeys.id })
     .from(apiKeys)
     .innerJoin(users, eq(apiKeys.userId, users.id))
-    .where(eq(apiKeys.keyHash, hashApiKey(token)))
+    .where(and(eq(apiKeys.keyHash, hashApiKey(token)), isNull(apiKeys.revokedAt)))
     .get();
   if (!row) return null;
   db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, row.keyId)).run();
