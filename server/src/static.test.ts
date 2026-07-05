@@ -34,6 +34,12 @@ describe('mountWeb', () => {
     expect(res.headers.get('cache-control')).toContain('immutable');
   });
 
+  it('serves other files from the build, like the favicon', async () => {
+    fs.writeFileSync(path.join(dir, 'favicon.svg'), '<svg/>');
+    const res = await app.request('/app/favicon.svg');
+    expect(await res.text()).toBe('<svg/>');
+  });
+
   it('falls back to index.html for client routes', async () => {
     const res = await app.request('/app/links/42');
     expect(res.status).toBe(200);

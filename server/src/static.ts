@@ -21,10 +21,7 @@ export function mountWeb(app: Hono, webDir: string): boolean {
     if (c.res.status === 200)
       c.res.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
   });
-  app.use(
-    '/app/assets/*',
-    serveStatic({ root, rewriteRequestPath: (p) => p.replace(/^\/app/, '') }),
-  );
+  app.use('/app/*', serveStatic({ root, rewriteRequestPath: (p) => p.replace(/^\/app/, '') }));
   app.get('/app/*', (c) => {
     c.header('Cache-Control', 'no-cache');
     return c.html(indexHtml);
