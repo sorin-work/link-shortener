@@ -45,6 +45,24 @@ served by the API, e.g. http://localhost:3000/my-slug.
 
 The SQLite database is created at `data/links.db` and migrations run on start.
 
+## Configuration
+
+All settings are environment variables (a `.env` file works in development).
+
+| Variable           | Default                    | Description                                        |
+| ------------------ | -------------------------- | -------------------------------------------------- |
+| `PORT`             | `3000`                     | HTTP port of the API and dashboard                 |
+| `BASE_URL`         | `http://localhost:$PORT`   | Public origin used to build short URLs             |
+| `DATABASE_PATH`    | `data/links.db`            | SQLite file, created if missing                    |
+| `MIGRATIONS_DIR`   | `server/drizzle`           | Drizzle migrations, applied on start               |
+| `WEB_DIR`          | `dist/web`                 | Built dashboard; not served when missing           |
+| `SESSION_TTL_DAYS` | `30`                       | How long a sign-in lasts                           |
+| `SECURE_COOKIES`   | on for https `BASE_URL`    | Mark the session cookie `Secure`                   |
+| `COUNTRY_HEADER`   | `cf-ipcountry`             | Request header with the visitor's ISO country code |
+| `TRUST_PROXY`      | `false`                    | Trust `X-Forwarded-For` for rate limiting          |
+| `LOG_REQUESTS`     | `true`                     | Log one line per request                           |
+| `SEED_DEMO`        | `false` (`true` in Docker) | Create the demo account with sample data on start  |
+
 ## Scripts
 
 | Command             | What it does                                 |
