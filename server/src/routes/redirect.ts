@@ -21,7 +21,11 @@ export function redirectRoutes({ db, config }: AppDeps) {
   const unlockAttempts = createRateLimiter({ windowMs: 15 * 60_000, max: 10 });
 
   const findLink = (slug: string) =>
-    db.select().from(links).where(eq(links.slug, slug.toLowerCase())).get();
+    db
+      .select()
+      .from(links)
+      .where(sql`lower(${links.slug}) = ${slug.toLowerCase()}`)
+      .get();
 
   /** Responds for links that can't be followed right now, or returns null. */
   const blocked = (c: Context, link: Link) => {

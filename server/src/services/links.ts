@@ -40,7 +40,8 @@ export function serializeLink(link: Link, config: Config, summary = NO_CLICKS) {
 export type LinkDto = ReturnType<typeof serializeLink>;
 
 export function slugTaken(db: Db, slug: string, exceptId?: number): boolean {
-  const where = exceptId ? and(eq(links.slug, slug), ne(links.id, exceptId)) : eq(links.slug, slug);
+  const sameSlug = sql`lower(${links.slug}) = ${slug.toLowerCase()}`;
+  const where = exceptId ? and(sameSlug, ne(links.id, exceptId)) : sameSlug;
   return !!db.select({ id: links.id }).from(links).where(where).get();
 }
 

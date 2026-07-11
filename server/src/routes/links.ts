@@ -79,9 +79,10 @@ export function linkRoutes({ db, config }: AppDeps) {
     return date;
   };
 
-  const customSlugOrThrow = (slug: string, exceptId?: number) => {
-    const problem = checkCustomSlug(slug);
+  const customSlugOrThrow = (input: string, exceptId?: number) => {
+    const problem = checkCustomSlug(input);
     if (problem) throw badRequest(problem, [{ path: 'slug', message: problem }]);
+    const slug = input.toLowerCase();
     if (slugTaken(db, slug, exceptId)) throw conflict(`The slug "${slug}" is already taken`);
     return slug;
   };

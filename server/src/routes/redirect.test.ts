@@ -22,6 +22,23 @@ describe('GET /:slug', () => {
     expect(res.status).toBe(302);
   });
 
+  it('finds custom slugs typed with capital letters', async () => {
+    const { app } = setup();
+    const cookie = await registerUser(app);
+    const { link } = await createLink(app, cookie, {
+      url: 'https://example.com/',
+      slug: 'Spring-Sale',
+    });
+    expect(link.slug).toBe('spring-sale');
+    expect((await call(app, 'GET', '/Spring-Sale')).status).toBe(302);
+    expect((await call(app, 'GET', '/spring-sale')).status).toBe(302);
+    const clash = await call(app, 'POST', '/api/links', {
+      cookie,
+      json: { url: 'https://other.example', slug: 'SPRING-SALE' },
+    });
+    expect(clash.status).toBe(409);
+  });
+
   it('shows a not found page for unknown slugs', async () => {
     const { app } = setup();
     const res = await call(app, 'GET', '/missing');
