@@ -15,6 +15,7 @@ import {
   getOwnLink,
   LINK_SORTS,
   listLinks,
+  listTags,
   serializeLink,
   slugTaken,
   uniqueSlug,
@@ -23,10 +24,24 @@ import type { AppEnv } from '../types.js';
 
 const idParam = z.object({ id: z.coerce.number().int().positive() });
 
+const tags = z
+  .array(
+    z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(1)
+      .max(30)
+      .regex(/^[\p{L}\p{N}_-]+$/u, 'Tags may only contain letters, digits, - and _'),
+  )
+  .max(10, 'At most 10 tags')
+  .transform((list) => [...new Set(list)]);
+
 const listQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   q: z.string().trim().max(200).optional(),
+  tag: z.string().trim().toLowerCase().max(30).optional(),
   sort: z.enum(LINK_SORTS).default('newest'),
 });
 
@@ -37,6 +52,7 @@ const createSchema = z.object({
   expiresAt: z.string().max(40).nullable().optional(),
   maxClicks: z.number().int().min(1).max(10_000_000).nullable().optional(),
   password: z.string().min(4, 'Password must be at least 4 characters').max(200).optional(),
+  tags: tags.optional(),
 });
 
 const updateSchema = z.object({
@@ -46,6 +62,7 @@ const updateSchema = z.object({
   expiresAt: z.string().max(40).nullable().optional(),
   maxClicks: z.number().int().min(1).max(10_000_000).nullable().optional(),
   paused: z.boolean().optional(),
+  tags: tags.optional(),
   /** a new password, or null to remove protection */
   password: z
     .string()
@@ -91,6 +108,9 @@ export function linkRoutes({ db, config }: AppDeps) {
     return c.json(listLinks(db, config, c.get('user').id, c.req.valid('query')));
   });
 
+  // Registered before /:id so "tags" isn't read as an id.
+  r.get('/tags', (c) => c.json({ tags: listTags(db, c.get('user').id) }));
+
   r.get('/:id', validate('param', idParam), (c) => {
     const link = getOwnLink(db, c.get('user').id, c.req.valid('param').id);
     const summary = clickSummaries(db, [link.id]).get(link.id);
@@ -113,6 +133,7 @@ export function linkRoutes({ db, config }: AppDeps) {
         expiresAt,
         maxClicks: input.maxClicks ?? null,
         passwordHash: input.password ? await hashPassword(input.password) : null,
+        tags: input.tags ?? [],
       })
       .returning()
       .get();
@@ -132,6 +153,7 @@ export function linkRoutes({ db, config }: AppDeps) {
     if (input.expiresAt !== undefined) changes.expiresAt = expiryOrThrow(input.expiresAt);
     if (input.maxClicks !== undefined) changes.maxClicks = input.maxClicks;
     if (input.paused !== undefined) changes.paused = input.paused;
+    if (input.tags !== undefined) changes.tags = input.tags;
     if (input.password !== undefined) {
       changes.passwordHash = input.password ? await hashPassword(input.password) : null;
     }

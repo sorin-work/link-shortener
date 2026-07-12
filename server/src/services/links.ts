@@ -32,6 +32,7 @@ export function serializeLink(link: Link, config: Config, summary = NO_CLICKS) {
     clickCount: link.clickCount,
     status: availability(link),
     hasPassword: !!link.passwordHash,
+    tags: link.tags,
     createdAt: link.createdAt.toISOString(),
     updatedAt: link.updatedAt.toISOString(),
   };
@@ -63,6 +64,7 @@ export interface ListOptions {
   page: number;
   limit: number;
   q?: string;
+  tag?: string;
   sort?: LinkSort;
 }
 
@@ -78,13 +80,16 @@ const ORDER: Record<LinkSort, SQL[]> = {
 const likeEscape = (value: string) => value.replace(/[\\%_]/g, (ch) => `\\${ch}`);
 
 export function listLinks(db: Db, config: Config, userId: number, opts: ListOptions) {
-  const { page, limit, q, sort = 'newest' } = opts;
+  const { page, limit, q, tag, sort = 'newest' } = opts;
   const owner = eq(links.userId, userId);
   let where = owner;
+  if (tag) {
+    where = and(where, sql`exists (select 1 from json_each(${links.tags}) where value = ${tag})`)!;
+  }
   if (q) {
     const pattern = `%${likeEscape(q)}%`;
     const match = sql`(${links.slug} like ${pattern} escape '\\' or ${links.url} like ${pattern} escape '\\' or ${links.title} like ${pattern} escape '\\')`;
-    where = and(owner, match)!;
+    where = and(where, match)!;
   }
 
   const total = db.select({ n: count() }).from(links).where(where).get()?.n ?? 0;
@@ -108,6 +113,14 @@ export function listLinks(db: Db, config: Config, userId: number, opts: ListOpti
     total,
     pages: Math.max(1, Math.ceil(total / limit)),
   };
+}
+
+/** Every tag the user has used, with how many links carry it. */
+export function listTags(db: Db, userId: number) {
+  return db.all<{ name: string; links: number }>(
+    sql`select value as name, count(*) as links from ${links}, json_each(${links.tags})
+        where ${links.userId} = ${userId} group by value order by value`,
+  );
 }
 
 /** Picks a random slug that is not in use yet. */
