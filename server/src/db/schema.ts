@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 const createdAt = () =>
@@ -39,6 +40,10 @@ export const links = sqliteTable(
     clickCount: integer('click_count').notNull().default(0),
     passwordHash: text('password_hash'),
     paused: integer('paused', { mode: 'boolean' }).notNull().default(false),
+    tags: text('tags', { mode: 'json' })
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'`),
     createdAt: createdAt(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
       .notNull()
