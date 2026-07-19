@@ -19,6 +19,7 @@ export interface Link {
   clickCount: number;
   status: 'active' | 'paused' | 'expired' | 'limit_reached';
   hasPassword: boolean;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +58,7 @@ export interface LinkInput {
   maxClicks?: number | null;
   password?: string | null;
   paused?: boolean;
+  tags?: string[];
 }
 
 export interface Overview {

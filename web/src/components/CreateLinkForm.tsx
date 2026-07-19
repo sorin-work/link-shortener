@@ -1,6 +1,6 @@
 import { useRef, useState } from 'preact/hooks';
 import { api, ApiError, errorMessage } from '../api';
-import { todayIso } from '../format';
+import { parseTags, todayIso } from '../format';
 import { UtmBuilder } from './UtmBuilder';
 import type { Link } from '../types';
 
@@ -11,6 +11,7 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
   const [expiresAt, setExpiresAt] = useState('');
   const [maxClicks, setMaxClicks] = useState('');
   const [password, setPassword] = useState('');
+  const [tags, setTags] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -33,6 +34,7 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
         expiresAt: expiresAt || undefined,
         maxClicks: maxClicks ? Number(maxClicks) : undefined,
         password: password || undefined,
+        tags: tags ? parseTags(tags) : undefined,
       });
       setUrl('');
       setSlug('');
@@ -40,6 +42,7 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
       setExpiresAt('');
       setMaxClicks('');
       setPassword('');
+      setTags('');
       onCreated(link);
     } catch (err) {
       setError(err instanceof ApiError ? err : errorMessage(err));
@@ -111,6 +114,17 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
             onInput={(e) => setPassword(e.currentTarget.value)}
           />
           {fieldError('password') && <span class="field-error">{fieldError('password')}</span>}
+        </label>
+      )}
+      {showOptions && (
+        <label>
+          Tags <span class="muted">(comma separated)</span>
+          <input
+            placeholder="spring, newsletter"
+            value={tags}
+            onInput={(e) => setTags(e.currentTarget.value)}
+          />
+          {fieldError('tags') && <span class="field-error">{fieldError('tags')}</span>}
         </label>
       )}
       {showOptions && (

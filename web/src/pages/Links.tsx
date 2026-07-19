@@ -5,6 +5,7 @@ import { CreateLinkForm } from '../components/CreateLinkForm';
 import { EmptyState } from '../components/EmptyState';
 import { Pagination } from '../components/Pagination';
 import { Summary } from '../components/Summary';
+import { Tags } from '../components/Tags';
 import { StatusBadges } from '../components/StatusBadge';
 import { displayUrl, formatNumber, timeAgo } from '../format';
 import { useTitle } from '../hooks';
@@ -129,6 +130,7 @@ export function LinksPage() {
                 <td>
                   {link.title && <div>{link.title}</div>}
                   <div class="muted truncate">{displayUrl(link.url)}</div>
+                  <Tags tags={link.tags} />
                 </td>
                 <td class="num">{formatNumber(link.clicks)}</td>
                 <td class="muted hide-sm" title={link.lastClickAt ?? undefined}>

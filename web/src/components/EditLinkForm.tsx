@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { api, ApiError, errorMessage } from '../api';
-import { todayIso } from '../format';
+import { parseTags, todayIso } from '../format';
 import type { Link } from '../types';
 
 interface Props {
@@ -16,6 +16,7 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
   const [expiresAt, setExpiresAt] = useState(link.expiresAt?.slice(0, 10) ?? '');
   const [maxClicks, setMaxClicks] = useState(link.maxClicks?.toString() ?? '');
   const [password, setPassword] = useState('');
+  const [tags, setTags] = useState(link.tags.join(', '));
   const [removePassword, setRemovePassword] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -32,6 +33,7 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
         slug: slug.trim(),
         title: title.trim() || null,
         maxClicks: maxClicks ? Number(maxClicks) : null,
+        tags: parseTags(tags),
         ...(removePassword ? { password: null } : password ? { password } : {}),
         // Only send the expiry when it changed, so an unchanged timestamp isn't re-validated.
         ...(expiresAt !== (link.expiresAt?.slice(0, 10) ?? '') && { expiresAt: expiresAt || null }),
@@ -59,6 +61,11 @@ export function EditLinkForm({ link, onSaved, onCancel }: Props) {
       <label>
         Title
         <input value={title} onInput={(e) => setTitle(e.currentTarget.value)} />
+      </label>
+      <label>
+        Tags <span class="muted">(comma separated)</span>
+        <input value={tags} onInput={(e) => setTags(e.currentTarget.value)} />
+        {fieldError('tags') && <span class="field-error">{fieldError('tags')}</span>}
       </label>
       <label>
         Expires on <span class="muted">(leave empty to keep it forever)</span>

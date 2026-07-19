@@ -26,6 +26,13 @@ export function timeAgo(iso: string, now = Date.now()): string {
   return formatDate(iso);
 }
 
+/** "a, b,,c " -> ["a", "b", "c"] */
+export const parseTags = (value: string) =>
+  value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+
 /** example.com/path without the scheme, for compact tables. */
 export function displayUrl(url: string): string {
   try {

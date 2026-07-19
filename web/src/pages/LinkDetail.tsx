@@ -6,6 +6,7 @@ import { CopyButton } from '../components/CopyButton';
 import { EditLinkForm } from '../components/EditLinkForm';
 import { QrPanel } from '../components/QrPanel';
 import { StatusBadges } from '../components/StatusBadge';
+import { Tags } from '../components/Tags';
 import { formatDate, formatNumber } from '../format';
 import { useTitle } from '../hooks';
 import { useToast } from '../toast';
@@ -87,6 +88,7 @@ export function LinkDetailPage({ id }: { id: number }) {
             <StatusBadges link={link} />
           </div>
           <p class="muted truncate">→ {link.url}</p>
+          <Tags tags={link.tags} />
         </div>
         <div class="actions">
           <a class="button" href={`/api/links/${link.id}/clicks.csv?days=${days}`} download>
