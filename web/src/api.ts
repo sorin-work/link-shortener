@@ -69,7 +69,8 @@ export const api = {
     request<void>('POST', '/auth/password', { currentPassword, newPassword }),
   deleteAccount: (password: string) => request<void>('DELETE', '/auth/me', { password }),
 
-  listLinks: (params: { page?: number; q?: string; limit?: number; sort?: string }) =>
+  listTags: () => request<{ tags: { name: string; links: number }[] }>('GET', '/links/tags'),
+  listLinks: (params: { page?: number; q?: string; limit?: number; sort?: string; tag?: string }) =>
     request<LinkPage>('GET', `/links${toQuery(params)}`),
   getLink: (id: number) => request<{ link: Link }>('GET', `/links/${id}`),
   createLink: (input: LinkInput) => request<{ link: Link }>('POST', '/links', input),

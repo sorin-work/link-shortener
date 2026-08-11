@@ -18,6 +18,8 @@ export function LinksPage() {
   const page = Math.max(1, Number(query.get('page')) || 1);
   const q = query.get('q') ?? '';
   const sort = query.get('sort') ?? 'newest';
+  const tag = query.get('tag') ?? '';
+  const [allTags, setAllTags] = useState<{ name: string; links: number }[]>([]);
   const [search, setSearch] = useState(q);
   const [data, setData] = useState<LinkPage | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -42,19 +44,27 @@ export function LinksPage() {
   useEffect(() => {
     let cancelled = false;
     api
-      .listLinks({ page, q, sort })
+      .listLinks({ page, q, sort, tag })
       .then((res) => !cancelled && setData(res))
       .catch((err) => !cancelled && setError(errorMessage(err)));
     return () => {
       cancelled = true;
     };
-  }, [version, page, q, sort]);
+  }, [version, page, q, sort, tag]);
 
-  const go = (next: { page?: number; q?: string; sort?: string }) => {
+  useEffect(() => {
+    api
+      .listTags()
+      .then((res) => setAllTags(res.tags))
+      .catch(() => setAllTags([]));
+  }, [version]);
+
+  const go = (next: { page?: number; q?: string; sort?: string; tag?: string }) => {
     const nextSort = next.sort ?? sort;
     navigate(
       `/${toQuery({
         q: next.q ?? q,
+        tag: next.tag ?? tag,
         sort: nextSort === 'newest' ? undefined : nextSort,
         page: next.page && next.page > 1 ? next.page : undefined,
       })}`,
@@ -97,6 +107,20 @@ export function LinksPage() {
           <option value="clicks">Most clicks</option>
           <option value="slug">Slug A–Z</option>
         </select>
+        {allTags.length > 0 && (
+          <select
+            value={tag}
+            aria-label="Filter by tag"
+            onChange={(e) => go({ tag: e.currentTarget.value, page: 1 })}
+          >
+            <option value="">All tags</option>
+            {allTags.map((t) => (
+              <option key={t.name} value={t.name}>
+                #{t.name} ({t.links})
+              </option>
+            ))}
+          </select>
+        )}
       </form>
       {error && <p class="alert">{error}</p>}
       {!data && !error && <p class="muted">Loading links…</p>}
@@ -130,7 +154,7 @@ export function LinksPage() {
                 <td>
                   {link.title && <div>{link.title}</div>}
                   <div class="muted truncate">{displayUrl(link.url)}</div>
-                  <Tags tags={link.tags} />
+                  <Tags tags={link.tags} onSelect={(t) => go({ tag: t, page: 1 })} />
                 </td>
                 <td class="num">{formatNumber(link.clicks)}</td>
                 <td class="muted hide-sm" title={link.lastClickAt ?? undefined}>
