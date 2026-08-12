@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
@@ -161,6 +161,19 @@ export function linkRoutes({ db, config }: AppDeps) {
     const updated = db.update(links).set(changes).where(eq(links.id, link.id)).returning().get();
     return c.json({ link: serializeLink(updated, config) });
   });
+
+  r.post(
+    '/bulk-delete',
+    validate('json', z.object({ ids: z.array(z.number().int().positive()).min(1).max(100) })),
+    (c) => {
+      const { ids } = c.req.valid('json');
+      const result = db
+        .delete(links)
+        .where(and(eq(links.userId, c.get('user').id), inArray(links.id, ids)))
+        .run();
+      return c.json({ deleted: result.changes });
+    },
+  );
 
   r.delete('/:id', validate('param', idParam), (c) => {
     const user = c.get('user');
