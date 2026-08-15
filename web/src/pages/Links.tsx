@@ -20,6 +20,26 @@ export function LinksPage() {
   const sort = query.get('sort') ?? 'newest';
   const tag = query.get('tag') ?? '';
   const [allTags, setAllTags] = useState<{ name: string; links: number }[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  const toggle = (id: number) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
+  };
+
+  async function deleteSelected() {
+    if (!window.confirm(`Delete ${selected.size} link(s) and their click history?`)) return;
+    try {
+      const { deleted } = await api.deleteLinks([...selected]);
+      notify(`Deleted ${deleted} link(s)`);
+      setSelected(new Set());
+      setVersion((v) => v + 1);
+    } catch (err) {
+      notify(errorMessage(err), 'error');
+    }
+  }
   const [search, setSearch] = useState(q);
   const [data, setData] = useState<LinkPage | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -134,6 +154,18 @@ export function LinksPage() {
         <table class="table">
           <thead>
             <tr>
+              <th class="check">
+                <input
+                  type="checkbox"
+                  aria-label="Select all"
+                  checked={data.links.length > 0 && data.links.every((l) => selected.has(l.id))}
+                  onChange={(e) =>
+                    setSelected(
+                      e.currentTarget.checked ? new Set(data.links.map((l) => l.id)) : new Set(),
+                    )
+                  }
+                />
+              </th>
               <th>Short link</th>
               <th>Destination</th>
               <th class="num">Clicks</th>
@@ -144,6 +176,14 @@ export function LinksPage() {
           <tbody>
             {data.links.map((link) => (
               <tr key={link.id} class="clickable" onClick={() => navigate(`/links/${link.id}`)}>
+                <td class="check" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    aria-label={`Select /${link.slug}`}
+                    checked={selected.has(link.id)}
+                    onChange={() => toggle(link.id)}
+                  />
+                </td>
                 <td>
                   <div class="slug-cell">
                     <span class="mono">/{link.slug}</span>
@@ -169,6 +209,17 @@ export function LinksPage() {
         </table>
       )}
       {data && <Pagination page={data.page} pages={data.pages} onPage={(p) => go({ page: p })} />}
+      {selected.size > 0 && (
+        <div class="bulk-bar">
+          <span>{selected.size} selected</span>
+          <button type="button" class="danger" onClick={deleteSelected}>
+            Delete selected
+          </button>
+          <button type="button" class="ghost" onClick={() => setSelected(new Set())}>
+            Clear
+          </button>
+        </div>
+      )}
     </section>
   );
 }

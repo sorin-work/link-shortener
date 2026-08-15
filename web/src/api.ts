@@ -77,6 +77,8 @@ export const api = {
   updateLink: (id: number, input: Partial<LinkInput>) =>
     request<{ link: Link }>('PATCH', `/links/${id}`, input),
   deleteLink: (id: number) => request<void>('DELETE', `/links/${id}`),
+  deleteLinks: (ids: number[]) =>
+    request<{ deleted: number }>('POST', '/links/bulk-delete', { ids }),
   overview: () => request<Overview>('GET', '/overview'),
 
   listKeys: () => request<{ keys: ApiKey[] }>('GET', '/keys'),
