@@ -206,6 +206,28 @@ describe('DELETE /api/links/:id', () => {
     expect(get.status).toBe(404);
   });
 
+  it('deletes several links at once, skipping ones you do not own', async () => {
+    const { app, cookie, create } = await withUser();
+    const a = (await create({ url: 'https://a.example' })).body.link.id;
+    const b = (await create({ url: 'https://b.example' })).body.link.id;
+    const keep = (await create({ url: 'https://c.example' })).body.link.id;
+    const other = await registerUser(app);
+    const theirs = await call(app, 'POST', '/api/links', {
+      cookie: other,
+      json: { url: 'https://d.example' },
+    });
+    const theirId = (await readJson(theirs)).link.id;
+
+    const res = await call(app, 'POST', '/api/links/bulk-delete', {
+      cookie,
+      json: { ids: [a, b, theirId] },
+    });
+    expect(await readJson(res)).toEqual({ deleted: 2 });
+    const list = await readJson(await call(app, 'GET', '/api/links', { cookie }));
+    expect(list.links.map((l: { id: number }) => l.id)).toEqual([keep]);
+    expect((await call(app, 'GET', `/api/links/${theirId}`, { cookie: other })).status).toBe(200);
+  });
+
   it("can't delete someone else's link", async () => {
     const { app, cookie, create } = await withUser();
     const { body } = await create({ url: 'https://one.example' });
