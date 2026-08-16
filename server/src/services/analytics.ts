@@ -22,6 +22,8 @@ export interface NamedCount {
 
 const dayOf = sql<string>`strftime('%Y-%m-%d', ${clicks.createdAt} / 1000, 'unixepoch')`;
 
+const hourOf = sql<string>`strftime('%H', ${clicks.createdAt} / 1000, 'unixepoch')`;
+
 const BREAKDOWN_LIMIT = 10;
 
 function breakdown(
@@ -120,12 +122,24 @@ export function linkStats(
     byDay.push({ date, clicks: perDay.get(date) ?? 0 });
   }
 
+  // UTC hours; the dashboard shifts them into the viewer's timezone.
+  const byHour = Array.from({ length: 24 }, () => 0);
+  for (const row of db
+    .select({ hour: hourOf, n: count() })
+    .from(clicks)
+    .where(inRange)
+    .groupBy(hourOf)
+    .all()) {
+    byHour[Number(row.hour)] = row.n;
+  }
+
   return {
     range: { days, from: byDay[0]?.date, to: byDay.at(-1)?.date },
     total,
     bots: bots ?? 0,
     includeBots,
     byDay,
+    byHour,
     referrers: breakdown(db, inRange, clicks.referrerHost, 'Direct'),
     devices: breakdown(db, inRange, clicks.device, 'unknown'),
     browsers: breakdown(db, inRange, clicks.browser, 'Unknown'),

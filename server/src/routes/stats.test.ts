@@ -80,6 +80,18 @@ describe('GET /api/links/:id/stats', () => {
     expect(sum).toBe(body.total);
   });
 
+  it('counts clicks per utc hour', async () => {
+    const { app, db, cookie, link } = await linkWithClicks();
+    const at = new Date();
+    at.setUTCHours(9, 15, 0, 0);
+    if (at > new Date()) at.setUTCDate(at.getUTCDate() - 1);
+    db.insert(clicks).values({ linkId: link.id, createdAt: at }).run();
+    const body = await readJson(await call(app, 'GET', `/api/links/${link.id}/stats`, { cookie }));
+    expect(body.byHour).toHaveLength(24);
+    expect(body.byHour[9]).toBeGreaterThanOrEqual(1);
+    expect(body.byHour.reduce((a: number, b: number) => a + b, 0)).toBe(body.total);
+  });
+
   it('widens the range with ?days', async () => {
     const { app, cookie, link } = await linkWithClicks();
     const body = await readJson(
