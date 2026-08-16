@@ -57,6 +57,8 @@ export function redirectRoutes({ db, config }: AppDeps) {
     return c.redirect(link.url, 302);
   };
 
+  r.get('/:slug/', (c) => c.redirect(`/${encodeURIComponent(c.req.param('slug'))}`, 301));
+
   r.get('/:slug', (c) => {
     const link = findLink(c.req.param('slug'));
     if (!link) return c.html(notFoundPage(), 404);

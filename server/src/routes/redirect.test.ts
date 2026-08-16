@@ -99,6 +99,13 @@ describe('GET /:slug', () => {
     expect(db.select().from(clicks).all()).toHaveLength(0);
   });
 
+  it('drops a trailing slash', async () => {
+    const { app } = setup();
+    const res = await call(app, 'GET', '/launch/');
+    expect(res.status).toBe(301);
+    expect(res.headers.get('location')).toBe('/launch');
+  });
+
   it('does not swallow api routes', async () => {
     const { app } = setup();
     const res = await call(app, 'GET', '/api/health');
