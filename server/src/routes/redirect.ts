@@ -34,6 +34,10 @@ export function redirectRoutes({ db, config }: AppDeps) {
   };
 
   const follow = (c: Context, link: Link) => {
+    if (c.req.method === 'HEAD') {
+      c.header('Cache-Control', 'private, no-store');
+      return c.redirect(link.url, 302);
+    }
     const userAgent = c.req.header('user-agent');
     recordClick(db, link, {
       referrer: c.req.header('referer'),

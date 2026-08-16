@@ -89,6 +89,16 @@ describe('GET /:slug', () => {
     ).toEqual(['NL', null]);
   });
 
+  it('answers HEAD without recording a click', async () => {
+    const { app, db } = setup();
+    const cookie = await registerUser(app);
+    await createLink(app, cookie, { url: 'https://example.com/', slug: 'probe' });
+    const res = await app.request('/probe', { method: 'HEAD' });
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe('https://example.com/');
+    expect(db.select().from(clicks).all()).toHaveLength(0);
+  });
+
   it('does not swallow api routes', async () => {
     const { app } = setup();
     const res = await call(app, 'GET', '/api/health');
