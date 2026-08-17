@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { api, errorMessage } from '../api';
 import { BarChart } from '../components/BarChart';
 import { Breakdown } from '../components/Breakdown';
+import { HourChart } from '../components/HourChart';
 import { CopyButton } from '../components/CopyButton';
 import { EditLinkForm } from '../components/EditLinkForm';
 import { QrPanel } from '../components/QrPanel';
@@ -163,6 +164,10 @@ export function LinkDetailPage({ id }: { id: number }) {
 
       {stats && (
         <div class="breakdowns">
+          <div class="card">
+            <h2 class="card-title">Time of day</h2>
+            <HourChart byHour={stats.byHour} />
+          </div>
           <Breakdown title="Referrers" rows={stats.referrers} />
           <Breakdown title="Countries" rows={stats.countries} />
           <Breakdown title="Devices" rows={stats.devices} />

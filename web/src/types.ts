@@ -43,6 +43,8 @@ export interface LinkStats {
   bots: number;
   includeBots: boolean;
   byDay: { date: string; clicks: number }[];
+  /** 24 buckets, UTC */
+  byHour: number[];
   referrers: NamedCount[];
   devices: NamedCount[];
   browsers: NamedCount[];

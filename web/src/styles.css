@@ -553,6 +553,37 @@ button.tag:hover {
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.1);
 }
 
+.hour-chart {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  align-items: end;
+  gap: 2px;
+  height: 120px;
+  padding-bottom: 1.2rem;
+}
+
+.hour {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.hour-bar {
+  width: 100%;
+  min-height: 1px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+}
+
+.hour-label {
+  position: absolute;
+  bottom: -1.2rem;
+  left: 0;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;
