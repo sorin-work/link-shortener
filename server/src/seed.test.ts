@@ -25,6 +25,17 @@ describe('seedDemo', () => {
     expect(days.size).toBeGreaterThan(60);
   });
 
+  it('includes links for the optional features', async () => {
+    const { db } = setup();
+    await seedDemo(db);
+    const rows = db.select().from(links).all();
+    expect(rows.some((l) => l.expiresAt && l.expiresAt < new Date())).toBe(true);
+    expect(rows.some((l) => l.maxClicks !== null)).toBe(true);
+    expect(rows.some((l) => l.passwordHash)).toBe(true);
+    expect(rows.some((l) => l.paused)).toBe(true);
+    expect(rows.filter((l) => l.tags.length > 0).length).toBeGreaterThan(5);
+  });
+
   it('runs only once', async () => {
     const { db } = setup();
     await seedDemo(db);

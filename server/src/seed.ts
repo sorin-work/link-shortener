@@ -72,6 +72,20 @@ const DEMO_LINKS: { slug: string; url: string; title: string; ageDays: number }[
   { slug: 'status', url: 'https://status.example.com', title: 'Status page', ageDays: 3 },
 ];
 
+const DEMO_TAGS: Record<string, string[]> = {
+  launch: ['blog', 'launch'],
+  docs: ['docs'],
+  pricing: ['website'],
+  'webinar-march': ['events'],
+  survey: ['research'],
+  careers: ['website', 'hiring'],
+  'newsletter-12': ['newsletter'],
+  'spring-sale': ['shop', 'newsletter'],
+  'podcast-ep7': ['podcast'],
+};
+
+const DAY_MS = 86_400_000;
+
 /** Creates the demo user and its links once. Returns false when it already exists. */
 export async function seedDemo(db: Db, now = new Date()): Promise<boolean> {
   const existing = db.select({ id: users.id }).from(users).where(eq(users.email, DEMO_EMAIL)).get();
@@ -100,6 +114,7 @@ export async function seedDemo(db: Db, now = new Date()): Promise<boolean> {
         title: item.title,
         createdAt,
         updatedAt: createdAt,
+        tags: DEMO_TAGS[item.slug] ?? [],
       })
       .returning()
       .get();
@@ -128,6 +143,43 @@ export async function seedDemo(db: Db, now = new Date()): Promise<boolean> {
       db.insert(clicks)
         .values(rows.slice(i, i + 500))
         .run();
+  }
+
+  // A few links that show the other features without any clicks of their own.
+  const extras: Omit<typeof links.$inferInsert, 'userId'>[] = [
+    {
+      slug: 'black-friday-2025',
+      url: 'https://shop.example.com/black-friday',
+      title: 'Black Friday 2025',
+      expiresAt: new Date(now.getTime() - 20 * DAY_MS),
+      tags: ['shop'],
+    },
+    {
+      slug: 'beta-invite',
+      url: 'https://example.com/beta/join',
+      title: 'Beta invite (first 100 people)',
+      maxClicks: 100,
+      clickCount: 37,
+      tags: ['launch'],
+    },
+    {
+      slug: 'board-deck',
+      url: 'https://drive.example.com/d/q2-board-deck',
+      title: 'Q2 board deck (password: demo)',
+      passwordHash: await hashPassword('demo'),
+    },
+    {
+      slug: 'old-landing',
+      url: 'https://old.example.com/',
+      title: 'Old landing page',
+      paused: true,
+    },
+  ];
+  for (const extra of extras) {
+    const createdAt = new Date(now.getTime() - 45 * DAY_MS);
+    db.insert(links)
+      .values({ ...extra, userId: user.id, createdAt, updatedAt: createdAt })
+      .run();
   }
   return true;
 }
