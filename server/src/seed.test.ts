@@ -23,6 +23,9 @@ describe('seedDemo', () => {
     expect(rows.every((row) => row.createdAt <= now)).toBe(true);
     const days = new Set(rows.map((row) => row.createdAt.toISOString().slice(0, 10)));
     expect(days.size).toBeGreaterThan(60);
+    const bots = rows.filter((row) => row.isBot).length;
+    expect(bots).toBeGreaterThan(0);
+    expect(bots / rows.length).toBeLessThan(0.2);
   });
 
   it('includes links for the optional features', async () => {

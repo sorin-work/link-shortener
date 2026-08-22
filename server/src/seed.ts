@@ -2,7 +2,14 @@ import { eq } from 'drizzle-orm';
 import type { Db } from './db/client.js';
 import { clicks, links, users } from './db/schema.js';
 import { hashPassword } from './lib/password.js';
-import { COUNTRIES, mulberry32, REFERRERS, USER_AGENTS, weighted } from './seed-data.js';
+import {
+  BOT_AGENTS,
+  COUNTRIES,
+  mulberry32,
+  REFERRERS,
+  USER_AGENTS,
+  weighted,
+} from './seed-data.js';
 import { buildClick } from './services/clicks.js';
 
 export const DEMO_EMAIL = 'demo@example.com';
@@ -132,7 +139,8 @@ export async function seedDemo(db: Db, now = new Date()): Promise<boolean> {
         rows.push(
           buildClick(link.id, {
             at,
-            userAgent: weighted(USER_AGENTS, rand),
+            // Roughly one hit in twelve is a crawler or a chat app preview.
+            userAgent: rand() < 0.08 ? weighted(BOT_AGENTS, rand) : weighted(USER_AGENTS, rand),
             referrer: weighted(REFERRERS, rand),
             country: weighted(COUNTRIES, rand),
           }),

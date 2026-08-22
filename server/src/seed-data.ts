@@ -32,6 +32,15 @@ export const USER_AGENTS: [string, number][] = [
   ],
 ];
 
+// Link unfurlers and crawlers, so the bot filter has something to filter.
+export const BOT_AGENTS: [string, number][] = [
+  ['Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)', 4],
+  ['Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 3],
+  ['facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)', 2],
+  ['WhatsApp/2.23.20.0', 2],
+  ['Twitterbot/1.0', 1],
+];
+
 export const REFERRERS: [string | null, number][] = [
   [null, 34],
   ['https://www.google.com/', 18],
