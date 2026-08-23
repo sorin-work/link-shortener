@@ -23,20 +23,21 @@ export const notFound = (message = 'Not found') => new HttpError(404, message, '
 export const conflict = (message: string) => new HttpError(409, message, 'conflict');
 
 export const errorHandler: ErrorHandler = (err, c) => {
+  const requestId = c.get('requestId') as string | undefined;
   if (err instanceof HttpError) {
     return c.json(
-      { error: { code: err.code, message: err.message, details: err.details } },
+      { error: { code: err.code, message: err.message, details: err.details, requestId } },
       err.status,
     );
   }
   if (err instanceof HTTPException) {
     return c.json(
-      { error: { code: 'http_error', message: err.message || 'Request failed' } },
+      { error: { code: 'http_error', message: err.message || 'Request failed', requestId } },
       err.status,
     );
   }
-  console.error(err);
-  return c.json({ error: { code: 'internal', message: 'Internal server error' } }, 500);
+  console.error(`[${requestId ?? '-'}]`, err);
+  return c.json({ error: { code: 'internal', message: 'Internal server error', requestId } }, 500);
 };
 
 export const notFoundHandler: NotFoundHandler = (c) =>

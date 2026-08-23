@@ -20,6 +20,16 @@ describe('security headers', () => {
   });
 });
 
+describe('request ids', () => {
+  it('are returned in a header and in error bodies', async () => {
+    const { app } = setup();
+    const res = await call(app, 'GET', '/api/auth/me');
+    const id = res.headers.get('x-request-id');
+    expect(id).toBeTruthy();
+    expect((await readJson(res)).error.requestId).toBe(id);
+  });
+});
+
 describe('GET /robots.txt', () => {
   it('disallows crawling', async () => {
     const { app } = setup();

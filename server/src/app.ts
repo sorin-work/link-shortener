@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
+import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
 import type { Config } from './config.js';
 import type { Db } from './db/client.js';
@@ -23,6 +24,7 @@ export function createApp(deps: AppDeps) {
   const app = new Hono();
   app.onError(errorHandler);
   app.notFound(notFoundHandler);
+  app.use('*', requestId());
   if (deps.config.logRequests) app.use('*', logger());
   app.use(
     '*',
