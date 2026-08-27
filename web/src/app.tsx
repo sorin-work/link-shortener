@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from './auth';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
 import { ApiKeysPage } from './pages/ApiKeys';
 import { LinkDetailPage } from './pages/LinkDetail';
@@ -31,7 +32,9 @@ function Routes() {
 
   return (
     <Layout>
-      <Page path={path} />
+      <ErrorBoundary key={path}>
+        <Page path={path} />
+      </ErrorBoundary>
     </Layout>
   );
 }
