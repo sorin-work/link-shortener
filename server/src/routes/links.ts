@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { links } from '../db/schema.js';
+import { toCsv } from '../lib/csv.js';
 import { parseExpiry } from '../lib/dates.js';
 import { badRequest, conflict } from '../lib/errors.js';
 import { hashPassword } from '../lib/password.js';
@@ -106,6 +107,43 @@ export function linkRoutes({ db, config }: AppDeps) {
 
   r.get('/', validate('query', listQuery), (c) => {
     return c.json(listLinks(db, config, c.get('user').id, c.req.valid('query')));
+  });
+
+  r.get('/export.csv', (c) => {
+    const { links: rows } = listLinks(db, config, c.get('user').id, {
+      page: 1,
+      limit: 100_000,
+      sort: 'oldest',
+    });
+    const csv = toCsv(
+      [
+        'slug',
+        'short_url',
+        'url',
+        'title',
+        'tags',
+        'clicks',
+        'status',
+        'expires_at',
+        'max_clicks',
+        'created_at',
+      ],
+      rows.map((link) => [
+        link.slug,
+        link.shortUrl,
+        link.url,
+        link.title,
+        link.tags.join(' '),
+        link.clicks,
+        link.status,
+        link.expiresAt,
+        link.maxClicks,
+        link.createdAt,
+      ]),
+    );
+    c.header('Content-Type', 'text/csv; charset=utf-8');
+    c.header('Content-Disposition', 'attachment; filename="links.csv"');
+    return c.body(csv);
   });
 
   // Registered before /:id so "tags" isn't read as an id.
