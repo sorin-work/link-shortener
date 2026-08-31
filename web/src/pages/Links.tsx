@@ -93,7 +93,14 @@ export function LinksPage() {
 
   return (
     <section class="stack">
-      <h1>Links</h1>
+      <div class="page-header">
+        <h1>Links</h1>
+        {data && data.total > 0 && (
+          <a class="button" href="/api/links/export.csv" download>
+            Export CSV
+          </a>
+        )}
+      </div>
       <Summary version={version} />
       <CreateLinkForm
         onCreated={(link) => {
