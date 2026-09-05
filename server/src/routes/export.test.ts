@@ -1,6 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { BROWSER_UA, call, createLink, registerUser, setup } from '../test/helpers.js';
 
+describe('GET /api/links/export.csv', () => {
+  it('lists every link of the user, oldest first', async () => {
+    const { app } = setup();
+    const cookie = await registerUser(app);
+    await createLink(app, cookie, { url: 'https://a.example/', slug: 'first', tags: ['x', 'y'] });
+    await createLink(app, cookie, {
+      url: 'https://b.example/',
+      slug: 'second',
+      title: 'Hi, there',
+    });
+    const other = await registerUser(app);
+    await createLink(app, other, { url: 'https://c.example/', slug: 'not-mine' });
+
+    const res = await call(app, 'GET', '/api/links/export.csv', { cookie });
+    expect(res.headers.get('content-disposition')).toContain('links.csv');
+    const lines = (await res.text()).trim().split('\r\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[1]).toMatch(
+      /^first,http:\/\/sho\.rt\/first,https:\/\/a\.example\/,,x y,0,active,/,
+    );
+    expect(lines[2]).toContain('"Hi, there"');
+  });
+});
+
 describe('GET /api/links/:id/clicks.csv', () => {
   it('downloads the clicks of a link', async () => {
     const { app } = setup({ countryHeader: 'x-country' });
