@@ -25,14 +25,19 @@ export function LinkDetailPage({ id }: { id: number }) {
   const [includeBots, setIncludeBots] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     api
       .getStats(id, days, includeBots)
-      .then(setStats)
-      .catch(() => setStats(null));
+      .then((res) => !cancelled && setStats(res))
+      .catch(() => !cancelled && setStats(null));
+    return () => {
+      cancelled = true;
+    };
   }, [id, days, includeBots]);
 
   useEffect(() => {
     setLink(null);
+    setStats(null);
     setError(null);
     api
       .getLink(id)
