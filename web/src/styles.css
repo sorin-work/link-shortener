@@ -614,6 +614,34 @@ button.tag:hover {
   color: var(--muted);
 }
 
+.skeleton-table {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.skeleton-row {
+  height: 3rem;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--surface), var(--border), var(--surface));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-row {
+    animation: none;
+  }
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;

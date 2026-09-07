@@ -150,7 +150,13 @@ export function LinksPage() {
         )}
       </form>
       {error && <p class="alert">{error}</p>}
-      {!data && !error && <p class="muted">Loading links…</p>}
+      {!data && !error && (
+        <div class="skeleton-table" aria-busy="true" aria-label="Loading links">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div key={i} class="skeleton-row" />
+          ))}
+        </div>
+      )}
       {data && data.links.length === 0 && !q && (
         <EmptyState title="No links yet">Shorten your first URL to see it here.</EmptyState>
       )}
