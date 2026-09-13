@@ -17,6 +17,26 @@ describe('loadConfig', () => {
     expect(config.secureCookies).toBe(true);
   });
 
+  it('lets SECURE_COOKIES override the https default', () => {
+    expect(loadConfig({ BASE_URL: 'https://sho.rt', SECURE_COOKIES: 'false' }).secureCookies).toBe(
+      false,
+    );
+    expect(loadConfig({ SECURE_COOKIES: 'yes' }).secureCookies).toBe(true);
+  });
+
+  it('normalises the country header name', () => {
+    expect(loadConfig({ COUNTRY_HEADER: 'X-Country-Code' }).countryHeader).toBe('x-country-code');
+  });
+
+  it('builds the default base url from the port', () => {
+    expect(loadConfig({ PORT: '8080' }).baseUrl).toBe('http://localhost:8080');
+  });
+
+  it('reads boolean flags', () => {
+    const config = loadConfig({ SEED_DEMO: 'true', TRUST_PROXY: '1', LOG_REQUESTS: 'off' });
+    expect(config).toMatchObject({ seedDemo: true, trustProxy: true, logRequests: false });
+  });
+
   it('rejects a non-numeric port', () => {
     expect(() => loadConfig({ PORT: 'abc' })).toThrow(/PORT/);
   });
