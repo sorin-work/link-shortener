@@ -328,6 +328,14 @@ button.danger {
   margin: 0.4rem 0 0;
 }
 
+.detail-header > div:first-child {
+  min-width: 0;
+}
+
+.detail-header h1 {
+  overflow-wrap: anywhere;
+}
+
 .actions {
   display: flex;
   gap: 0.5rem;
@@ -720,7 +728,11 @@ button.tag:hover {
   }
 
   .truncate {
-    max-width: 14rem;
+    max-width: calc(100vw - 4rem);
+  }
+
+  .actions {
+    flex-wrap: wrap;
   }
 
   .breakdowns {
