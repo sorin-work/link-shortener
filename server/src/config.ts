@@ -34,6 +34,16 @@ function boolFrom(value: string | undefined, fallback: boolean): boolean {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const port = intFrom(env.PORT, 3000, 'PORT');
   const baseUrl = (env.BASE_URL || `http://localhost:${port}`).replace(/\/+$/, '');
+  let parsedBase: URL | null = null;
+  try {
+    parsedBase = new URL(baseUrl);
+  } catch {
+    // reported below
+  }
+  // Short links are built as `${BASE_URL}/${slug}`, so a path would break them.
+  if (!parsedBase || !/^https?:$/.test(parsedBase.protocol) || parsedBase.pathname !== '/') {
+    throw new Error(`BASE_URL must be an http(s) origin such as https://sho.rt, got "${baseUrl}"`);
+  }
   return {
     port,
     databasePath: env.DATABASE_PATH || path.resolve('data/links.db'),

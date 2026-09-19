@@ -37,6 +37,13 @@ describe('loadConfig', () => {
     expect(config).toMatchObject({ seedDemo: true, trustProxy: true, logRequests: false });
   });
 
+  it.each(['sho.rt', 'ftp://sho.rt', 'https://example.com/links'])(
+    'rejects BASE_URL %s',
+    (value) => {
+      expect(() => loadConfig({ BASE_URL: value })).toThrow(/BASE_URL/);
+    },
+  );
+
   it('rejects a non-numeric port', () => {
     expect(() => loadConfig({ PORT: 'abc' })).toThrow(/PORT/);
   });
