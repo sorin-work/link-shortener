@@ -13,6 +13,7 @@ import { useTitle } from '../hooks';
 import { useToast } from '../toast';
 import { Link as RouterLink, navigate } from '../router';
 import type { Link, LinkStats } from '../types';
+import { readUtm } from '../utm';
 
 export function LinkDetailPage({ id }: { id: number }) {
   const [link, setLink] = useState<Link | null>(null);
@@ -95,6 +96,15 @@ export function LinkDetailPage({ id }: { id: number }) {
           </div>
           <p class="muted truncate">→ {link.url}</p>
           <Tags tags={link.tags} />
+          {Object.entries(readUtm(link.url)).length > 0 && (
+            <p class="utm-summary">
+              {Object.entries(readUtm(link.url)).map(([key, value]) => (
+                <span key={key} class="badge badge-muted">
+                  utm_{key}: {value}
+                </span>
+              ))}
+            </p>
+          )}
         </div>
         <div class="actions">
           <a class="button" href={`/api/links/${link.id}/clicks.csv?days=${days}`} download>

@@ -650,6 +650,12 @@ button.tag:hover {
   }
 }
 
+.utm-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
 .empty {
   padding: 3rem 1rem;
   text-align: center;
