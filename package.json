@@ -24,7 +24,8 @@
     "build:server": "tsc -p server/tsconfig.build.json",
     "build:web": "vite build --config web/vite.config.ts",
     "dev:server": "tsx watch server/src/index.ts",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "seed": "tsx server/src/scripts/seed.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
