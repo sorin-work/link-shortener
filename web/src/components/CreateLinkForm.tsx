@@ -57,6 +57,7 @@ export function CreateLinkForm({ onCreated }: { onCreated: (link: Link) => void 
       <label class="wide">
         Destination URL
         <input
+          id="new-link-url"
           required
           placeholder="https://example.com/a/very/long/page"
           value={url}

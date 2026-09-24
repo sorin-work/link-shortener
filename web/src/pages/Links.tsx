@@ -51,9 +51,13 @@ export function LinksPage() {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       const typing = target?.closest('input, textarea, select, [contenteditable]');
-      if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey) {
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === '/') {
         e.preventDefault();
         searchInput.current?.focus();
+      } else if (e.key === 'n') {
+        e.preventDefault();
+        document.getElementById('new-link-url')?.focus();
       }
     };
     window.addEventListener('keydown', onKey);
