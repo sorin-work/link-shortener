@@ -106,6 +106,25 @@ describe('GET /:slug', () => {
     expect(res.headers.get('location')).toBe('/launch');
   });
 
+  it.each(['/' + 'x'.repeat(300), '/caf%C3%A9', '/a%20b', '/api'])(
+    'answers %s with the not found page',
+    async (path) => {
+      const { app } = setup();
+      const res = await call(app, 'GET', path);
+      expect(res.status).toBe(404);
+      expect(res.headers.get('content-type')).toContain('text/html');
+    },
+  );
+
+  it('keeps the query string of the destination intact', async () => {
+    const { app } = setup();
+    const cookie = await registerUser(app);
+    const url = 'https://example.com/search?q=a%20b&tags=x,y#results';
+    await createLink(app, cookie, { url, slug: 'search' });
+    const res = await call(app, 'GET', '/search?ignored=1');
+    expect(res.headers.get('location')).toBe(url);
+  });
+
   it('does not swallow api routes', async () => {
     const { app } = setup();
     const res = await call(app, 'GET', '/api/health');
