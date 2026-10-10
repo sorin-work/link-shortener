@@ -5,7 +5,7 @@ import type { AppDeps } from '../app.js';
 import { links } from '../db/schema.js';
 import { toCsv } from '../lib/csv.js';
 import { parseExpiry } from '../lib/dates.js';
-import { badRequest, conflict } from '../lib/errors.js';
+import { conflict, fieldError } from '../lib/errors.js';
 import { hashPassword } from '../lib/password.js';
 import { checkCustomSlug } from '../lib/slug.js';
 import { normalizeDestination } from '../lib/url.js';
@@ -80,7 +80,7 @@ export function linkRoutes({ db, config }: AppDeps) {
   const destinationOrThrow = (url: string) => {
     const destination = normalizeDestination(url, config.baseUrl);
     if (!destination.ok) {
-      throw badRequest(destination.error, [{ path: 'url', message: destination.error }]);
+      throw fieldError('url', destination.error);
     }
     return destination.url;
   };
@@ -93,13 +93,13 @@ export function linkRoutes({ db, config }: AppDeps) {
       : date <= new Date()
         ? 'Expiry must be in the future'
         : null;
-    if (problem) throw badRequest(problem, [{ path: 'expiresAt', message: problem }]);
+    if (problem) throw fieldError('expiresAt', problem);
     return date;
   };
 
   const customSlugOrThrow = (input: string, exceptId?: number) => {
     const problem = checkCustomSlug(input);
-    if (problem) throw badRequest(problem, [{ path: 'slug', message: problem }]);
+    if (problem) throw fieldError('slug', problem);
     const slug = input.toLowerCase();
     if (slugTaken(db, slug, exceptId)) throw conflict(`The slug "${slug}" is already taken`);
     return slug;

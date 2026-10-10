@@ -16,6 +16,9 @@ export class HttpError extends Error {
 
 export const badRequest = (message: string, details?: unknown) =>
   new HttpError(400, message, 'bad_request', details);
+/** A 400 that points the client at the offending field. */
+export const fieldError = (path: string, message: string) =>
+  badRequest(message, [{ path, message }]);
 export const unauthorized = (message = 'Authentication required') =>
   new HttpError(401, message, 'unauthorized');
 export const forbidden = (message = 'Not allowed') => new HttpError(403, message, 'forbidden');

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { users, type User } from '../db/schema.js';
 import { requireUser } from '../middleware/auth.js';
-import { badRequest, conflict, HttpError, unauthorized } from '../lib/errors.js';
+import { conflict, fieldError, HttpError, unauthorized } from '../lib/errors.js';
 import { clientIp } from '../lib/clientIp.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { createRateLimiter } from '../lib/rateLimit.js';
@@ -133,9 +133,7 @@ export function authRoutes({ db, config }: AppDeps) {
     const { currentPassword, newPassword } = c.req.valid('json');
     const user = c.get('user');
     if (!(await verifyPassword(currentPassword, user.passwordHash))) {
-      throw badRequest('Current password is incorrect', [
-        { path: 'currentPassword', message: 'Current password is incorrect' },
-      ]);
+      throw fieldError('currentPassword', 'Current password is incorrect');
     }
     db.update(users)
       .set({ passwordHash: await hashPassword(newPassword) })
@@ -149,9 +147,7 @@ export function authRoutes({ db, config }: AppDeps) {
   r.delete('/me', requireUser(db), validate('json', deleteSchema), async (c) => {
     const user = c.get('user');
     if (!(await verifyPassword(c.req.valid('json').password, user.passwordHash))) {
-      throw badRequest('Password is incorrect', [
-        { path: 'password', message: 'Password is incorrect' },
-      ]);
+      throw fieldError('password', 'Password is incorrect');
     }
     db.delete(users).where(eq(users.id, user.id)).run();
     deleteCookie(c, SESSION_COOKIE, { path: '/' });
