@@ -3,7 +3,7 @@
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 FROM deps AS build
 COPY . .
@@ -13,7 +13,7 @@ FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY server/drizzle ./server/drizzle
 RUN mkdir -p /data && chown node:node /data
