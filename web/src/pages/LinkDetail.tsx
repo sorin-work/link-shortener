@@ -5,6 +5,7 @@ import { Breakdown } from '../components/Breakdown';
 import { HourChart } from '../components/HourChart';
 import { CopyButton } from '../components/CopyButton';
 import { EditLinkForm } from '../components/EditLinkForm';
+import { EmptyState } from '../components/EmptyState';
 import { QrPanel } from '../components/QrPanel';
 import { StatusBadges } from '../components/StatusBadge';
 import { Tags } from '../components/Tags';
@@ -174,7 +175,14 @@ export function LinkDetailPage({ id }: { id: number }) {
           />
           Include bots and link previews
         </label>
-        {stats ? <BarChart data={stats.byDay} /> : <p class="muted">Loading stats…</p>}
+        {!stats && <p class="muted">Loading stats…</p>}
+        {stats && stats.total === 0 && (
+          <EmptyState title="No clicks in this period">
+            Share <span class="mono">{link.shortUrl}</span> and visits will show up here within
+            seconds.
+          </EmptyState>
+        )}
+        {stats && stats.total > 0 && <BarChart data={stats.byDay} />}
       </div>
 
       {stats && (
