@@ -129,6 +129,20 @@ docs/                 API reference, architecture, analytics notes
 More detail in [docs/api.md](docs/api.md), [docs/architecture.md](docs/architecture.md)
 and [docs/analytics.md](docs/analytics.md).
 
+## Troubleshooting
+
+- **Short links point to localhost.** Set `BASE_URL` to the public origin, e.g.
+  `BASE_URL=https://sho.rt docker compose up -d`.
+- **Every click shows country "Unknown".** The country comes from a proxy
+  header. Behind Cloudflare it works out of the box; elsewhere set
+  `COUNTRY_HEADER` to the header your proxy adds.
+- **Signed out right after signing in over plain http.** `SECURE_COOKIES` is
+  on because `BASE_URL` starts with `https://`; serve the app over https or set
+  `SECURE_COOKIES=false` for testing.
+- **Everyone shares one rate limit bucket behind a proxy.** Set
+  `TRUST_PROXY=true` so the client address is read from `X-Forwarded-For`.
+- **`SQLITE_BUSY` errors.** Only one app instance should use a database file.
+
 ## License
 
 [MIT](LICENSE)
