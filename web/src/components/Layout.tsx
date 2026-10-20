@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { applyTheme, storedTheme, type Theme } from '../theme';
 import { useAuth } from '../auth';
 import { Link, useLocation } from '../router';
@@ -14,6 +14,18 @@ export function Layout({ children }: { children: ComponentChildren }) {
   const { user, signOut } = useAuth();
   const { path } = useLocation();
   const [theme, setTheme] = useState<Theme>(storedTheme);
+
+  // Another tab changed the theme: follow it here too.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== 'theme') return;
+      const next = storedTheme();
+      setTheme(next);
+      applyTheme(next);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   return (
     <div class="shell">
