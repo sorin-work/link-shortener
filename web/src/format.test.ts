@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { displayUrl, formatNumber, timeAgo } from './format';
+import { displayUrl, formatNumber, timeAgo, todayIso } from './format';
 
 describe('formatNumber', () => {
   it('groups thousands', () => {
@@ -23,6 +23,14 @@ describe('timeAgo', () => {
 
   it('falls back to a date for old entries', () => {
     expect(ago(90 * 86_400_000)).toBe('Oct 22, 2025');
+  });
+});
+
+describe('todayIso', () => {
+  it('uses the local calendar date', () => {
+    const lateEvening = new Date(2026, 9, 31, 23, 30);
+    expect(todayIso(lateEvening)).toBe('2026-10-31');
+    expect(todayIso(new Date(2026, 0, 5, 0, 15))).toBe('2026-01-05');
   });
 });
 

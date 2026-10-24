@@ -11,7 +11,10 @@ export function formatDate(iso: string): string {
 }
 
 /** Today as YYYY-MM-DD, for the `min` of date inputs. */
-export const todayIso = () => new Date().toISOString().slice(0, 10);
+export function todayIso(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
 
 export function timeAgo(iso: string, now = Date.now()): string {
   const seconds = Math.round((now - Date.parse(iso)) / 1000);
