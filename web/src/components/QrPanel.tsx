@@ -1,8 +1,15 @@
 import { useState } from 'preact/hooks';
+import { CopyButton } from './CopyButton';
 
 const SIZES = [256, 512, 1024];
 
-export function QrPanel({ linkId, slug }: { linkId: number; slug: string }) {
+interface Props {
+  linkId: number;
+  slug: string;
+  shortUrl: string;
+}
+
+export function QrPanel({ linkId, slug, shortUrl }: Props) {
   const [size, setSize] = useState(512);
   const base = `/api/links/${linkId}/qr`;
 
@@ -28,6 +35,7 @@ export function QrPanel({ linkId, slug }: { linkId: number; slug: string }) {
         <a class="button" href={`${base}?format=svg&download=1`}>
           SVG
         </a>
+        <CopyButton text={shortUrl} label="Copy URL" />
       </div>
     </div>
   );

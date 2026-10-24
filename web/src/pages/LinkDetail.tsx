@@ -196,7 +196,7 @@ export function LinkDetailPage({ id }: { id: number }) {
           <Breakdown title="Devices" rows={stats.devices} />
           <Breakdown title="Browsers" rows={stats.browsers} />
           <Breakdown title="Operating systems" rows={stats.os} />
-          <QrPanel linkId={link.id} slug={link.slug} />
+          <QrPanel linkId={link.id} slug={link.slug} shortUrl={link.shortUrl} />
         </div>
       )}
     </section>
