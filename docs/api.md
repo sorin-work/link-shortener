@@ -27,22 +27,28 @@ and the account itself needs a browser session.
 
 ## Auth
 
-| Method | Path                 | Body                        | Notes              |
-| ------ | -------------------- | --------------------------- | ------------------ |
-| POST   | `/api/auth/register` | `{ email, name, password }` | starts a session   |
-| POST   | `/api/auth/login`    | `{ email, password }`       | rate limited       |
-| POST   | `/api/auth/logout`   |                             | 204                |
-| GET    | `/api/auth/me`       |                             | the signed in user |
+| Method | Path                 | Body                               | Notes                    |
+| ------ | -------------------- | ---------------------------------- | ------------------------ |
+| POST   | `/api/auth/register` | `{ email, name, password }`        | starts a session         |
+| POST   | `/api/auth/login`    | `{ email, password }`              | rate limited             |
+| POST   | `/api/auth/logout`   |                                    | 204                      |
+| GET    | `/api/auth/me`       |                                    | the signed in user       |
+| PATCH  | `/api/auth/me`       | `{ name }`                         | rename                   |
+| POST   | `/api/auth/password` | `{ currentPassword, newPassword }` | signs out other sessions |
+| DELETE | `/api/auth/me`       | `{ password }`                     | deletes everything       |
 
 ## Links
 
-| Method | Path             | Notes                           |
-| ------ | ---------------- | ------------------------------- |
-| GET    | `/api/links`     | `?page=1&limit=20&q=search`     |
-| POST   | `/api/links`     | create, see fields below        |
-| GET    | `/api/links/:id` | one link with its click count   |
-| PATCH  | `/api/links/:id` | any of the fields below         |
-| DELETE | `/api/links/:id` | deletes the link and its clicks |
+| Method | Path                     | Notes                                                               |
+| ------ | ------------------------ | ------------------------------------------------------------------- |
+| GET    | `/api/links`             | `?page=1&limit=20&q=search&tag=x&sort=newest\|oldest\|clicks\|slug` |
+| POST   | `/api/links`             | create, see fields below                                            |
+| GET    | `/api/links/tags`        | tags in use with link counts                                        |
+| GET    | `/api/links/export.csv`  | every link as CSV                                                   |
+| POST   | `/api/links/bulk-delete` | `{ ids: [1, 2] }`, up to 100                                        |
+| GET    | `/api/links/:id`         | one link with its click count                                       |
+| PATCH  | `/api/links/:id`         | any of the fields below                                             |
+| DELETE | `/api/links/:id`         | deletes the link and its clicks                                     |
 
 Link fields:
 
@@ -54,6 +60,8 @@ Link fields:
 | `expiresAt` | string \| null | ISO timestamp or `YYYY-MM-DD`                         |
 | `maxClicks` | number \| null | stop redirecting after this many clicks               |
 | `password`  | string \| null | visitors must enter it; `null` removes it (PATCH)     |
+| `tags`      | string[]       | up to 10, lowercased; letters, digits, `-` and `_`    |
+| `paused`    | boolean        | PATCH only; paused links answer `410`                 |
 
 Example:
 
@@ -70,6 +78,7 @@ curl -X POST http://localhost:4415/api/links \
 | GET    | `/api/links/:id/stats`      | `?days=30&bots=include` (bots are excluded by default) |
 | GET    | `/api/links/:id/clicks.csv` | `?days=30`, one row per click                          |
 | GET    | `/api/links/:id/qr`         | `?format=svg\|png&size=256&download=1`                 |
+| GET    | `/api/overview`             | link count, clicks this and last week, top links       |
 
 ## API keys
 
