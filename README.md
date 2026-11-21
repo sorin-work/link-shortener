@@ -128,6 +128,8 @@ docs/                 API reference, architecture, analytics notes
 
 More detail in [docs/api.md](docs/api.md), [docs/architecture.md](docs/architecture.md)
 and [docs/analytics.md](docs/analytics.md).
+Ideas for what might come next, with design notes, are in
+[ROADMAP.md](ROADMAP.md).
 
 ## Troubleshooting
 
