@@ -596,3 +596,73 @@ around.
 - Why later and large: it changes ownership across the whole app, and it only
   pays off with several people per instance.
 - Tests: a route matrix of roles against the link and stats endpoints.
+
+## Maybe
+
+### 33. Webhooks
+
+Some owners want a click or a limit reached pushed to their own system.
+
+- Per user webhook URLs with a signing secret, for "link created", "limit
+  reached", "link expired" and optionally every click (batched once a
+  minute).
+- Tricky: the server calls user supplied URLs, which is a request forgery
+  risk on a shared instance. Refuse private, loopback and link local
+  addresses after DNS resolution, and redirects.
+- Why maybe: the API with a key already covers polling, and per click
+  delivery means a queue and retries in a one process app.
+
+### 34. Broken destination checks
+
+A short link printed on a flyer outlives the page it points to.
+
+- A daily `HEAD` (falling back to `GET`) of each active destination, marking
+  links whose destination answers 404, 410 or fails, shown as a badge in the
+  list.
+- Same request forgery guards as 33, a polite rate per host, and a user
+  agent that says what it is.
+- Why maybe: many sites block or rate limit automated requests, so false
+  alarms are likely.
+
+### 35. Link preview cards
+
+When a short link is pasted into a chat app, the preview shows the
+destination's card, because the unfurler follows the redirect. Owners
+sometimes want their own title, description and image.
+
+- Optional preview fields per link. Requests from known unfurlers
+  (`lib/bots.ts` already recognises them) get a small HTML page with Open
+  Graph tags instead of the redirect; people still get redirected.
+- Why maybe: serving different content to bots and people is exactly what
+  phishing pages do, and some platforms penalise it.
+
+### 36. Rotation between destinations
+
+Split traffic between two landing pages to compare them.
+
+- A list of destinations with weights on a link, picked at random per click,
+  with the chosen one stored on the click so stats can split by it.
+- Why maybe: it overlaps with the routing rules (24) and with what proper A/B
+  testing tools do better.
+
+### 37. PostgreSQL as an option
+
+SQLite is the right default for one process, and the README warns about
+`SQLITE_BUSY` with more than one instance. Running two instances behind a
+load balancer needs a shared database.
+
+- Drizzle supports PostgreSQL, but the schema uses SQLite types
+  (`integer` timestamps, JSON in `text`) and some queries use SQLite
+  functions (`lower` on slugs is fine, `json_each` for tags is not portable).
+- Why maybe: it doubles the test matrix, and the rate limiters are in memory,
+  so several instances would need shared limits too.
+
+### 38. Browser tests for the dashboard
+
+The web tests render components in jsdom; nothing tests the built dashboard
+against the real server.
+
+- Playwright against `npm start` with a temporary database: sign in, create a
+  link, follow it, see the click on the stats page.
+- Why maybe: a browser in CI is slow and flaky. A single happy path would
+  catch most breakage between the API client and the server.
